@@ -1,0 +1,6 @@
+---
+title: "Project 1"
+author: "Emily Surrell"
+date: 9/30/2026
+format: html
+---
