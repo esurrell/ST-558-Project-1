@@ -1,0 +1,9 @@
+[
+  {
+    "objectID": "Project1.html",
+    "href": "Project1.html",
+    "title": "Project 1",
+    "section": "",
+    "text": "Bring in libraries needed for this project.\n\nlibrary(httr)\nlibrary(jsonlite)\nlibrary(tidyverse)\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.2.1     ✔ readr     2.2.0\n✔ forcats   1.0.1     ✔ stringr   1.6.0\n✔ ggplot2   4.0.3     ✔ tibble    3.3.1\n✔ lubridate 1.9.5     ✔ tidyr     1.3.2\n✔ purrr     1.2.2     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter()  masks stats::filter()\n✖ purrr::flatten() masks jsonlite::flatten()\n✖ dplyr::lag()     masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\nlibrary(dplyr)\n\nFor this project, I will be working with 2021, 2022, 2023, and 2024 data from the Public Use Microdata Sample (PUMS) Census API. First, I obtained an api key from the Census API website.\n\nkey &lt;- \"6ba7e209537814e77a7b7fc5aa8df5552ef8591b\"\n\nSample API call:\n\npums2024 &lt;- GET(paste0(\"https://api.census.gov/data/2024/acs/acs1/pums?get=SEX,PWGTP,MAR&SCHL=24&key=\", key))\n\n\nPart 1: Data Processing\n\nParsing Variable Values\nGet 2021 variables:\n\nvars2021 &lt;- GET(\"https://api.census.gov/data/2021/acs/acs1/pums/variables.json\")\n\nvars2021_parsed &lt;- fromJSON(rawToChar(vars2021$content))\n\nvars2021_variables &lt;- vars2021_parsed$variables$AGEP\n\nAGEP &lt;- as_tibble(vars2021_variables)"
+  }
+]

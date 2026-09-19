@@ -4,3 +4,41 @@ author: "Emily Surrell"
 date: 9/30/2026
 format: html
 ---
+
+Bring in libraries needed for this project.
+
+```{r}
+library(httr)
+library(jsonlite)
+library(tidyverse)
+library(dplyr)
+```
+
+For this project, I will be working with 2021, 2022, 2023, and 2024 data from the Public Use Microdata Sample (PUMS) Census API. First, I obtained an api key from [the Census API website](https://api.census.gov/data/key_signup.html).
+
+```{r}
+key <- "6ba7e209537814e77a7b7fc5aa8df5552ef8591b"
+```
+
+Sample API call:
+
+```{r}
+pums2024 <- GET(paste0("https://api.census.gov/data/2024/acs/acs1/pums?get=SEX,PWGTP,MAR&SCHL=24&key=", key))
+```
+
+### Part 1: Data Processing
+
+#### Parsing Variable Values
+
+Get 2021 variables:
+
+```{r}
+vars2021 <- GET("https://api.census.gov/data/2021/acs/acs1/pums/variables.json")
+
+vars2021_parsed <- fromJSON(rawToChar(vars2021$content))
+
+vars2021_variables <- vars2021_parsed$variables$AGEP
+
+AGEP <- as_tibble(vars2021_variables)
+```
+
