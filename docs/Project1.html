@@ -188,11 +188,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>vars2021 <span class="ot">&lt;-</span> <span class="fu">GET</span>(<span class="st">"https://api.census.gov/data/2021/acs/acs1/pums/variables.json"</span>)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>vars2021_parsed <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="fu">rawToChar</span>(vars2021<span class="sc">$</span>content))</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>vars2021 <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="fu">rawToChar</span>(vars2021<span class="sc">$</span>content))</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>vars2021_variables <span class="ot">&lt;-</span> vars2021_parsed<span class="sc">$</span>variables<span class="sc">$</span>AGEP</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>AGEP <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(vars2021_variables)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>vars2021 <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">AGEP =</span> vars2021<span class="sc">$</span>variables<span class="sc">$</span>AGEP<span class="sc">$</span>values,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">GASP =</span> vars2021<span class="sc">$</span>variables<span class="sc">$</span>GASP<span class="sc">$</span>values,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">GRPIP =</span> vars2021<span class="sc">$</span>variables<span class="sc">$</span>GRPIP<span class="sc">$</span>values,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">JWAP =</span> vars2021<span class="sc">$</span>variables<span class="sc">$</span>JWAP<span class="sc">$</span>values,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">JWDP =</span> vars2021<span class="sc">$</span>variables<span class="sc">$</span>JWDP<span class="sc">$</span>values,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">JWMNP =</span> vars2021<span class="sc">$</span>variables<span class="sc">$</span>JWMNP<span class="sc">$</span>values,</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">PWGTP =</span> vars2021<span class="sc">$</span>variables<span class="sc">$</span>PWGTP<span class="sc">$</span>values,</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">FER =</span> vars2021<span class="sc">$</span>variables<span class="sc">$</span>FER<span class="sc">$</span>values,</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">HHL =</span> vars2021<span class="sc">$</span>variables<span class="sc">$</span>HHL<span class="sc">$</span>values,</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">SCH =</span> vars2021<span class="sc">$</span>variables<span class="sc">$</span>SCH<span class="sc">$</span>values,</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">SCHL =</span> vars2021<span class="sc">$</span>variables<span class="sc">$</span>SCHL<span class="sc">$</span>values,</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">SEX =</span> vars2021<span class="sc">$</span>variables<span class="sc">$</span>SEX<span class="sc">$</span>values,</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">ST =</span> vars2021<span class="sc">$</span>variables<span class="sc">$</span>ST<span class="sc">$</span>values,</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">REGION =</span> vars2021<span class="sc">$</span>variables<span class="sc">$</span>REGION<span class="sc">$</span>values,</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">DIVISION =</span> vars2021<span class="sc">$</span>variables<span class="sc">$</span>DIVISION<span class="sc">$</span>values</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 
 

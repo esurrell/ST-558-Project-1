@@ -33,12 +33,26 @@ pums2024 <- GET(paste0("https://api.census.gov/data/2024/acs/acs1/pums?get=SEX,P
 Get 2021 variables:
 
 ```{r}
+
 vars2021 <- GET("https://api.census.gov/data/2021/acs/acs1/pums/variables.json")
 
-vars2021_parsed <- fromJSON(rawToChar(vars2021$content))
+vars2021 <- fromJSON(rawToChar(vars2021$content))
 
-vars2021_variables <- vars2021_parsed$variables$AGEP
-
-AGEP <- as_tibble(vars2021_variables)
+vars2021 <- list(
+  AGEP = vars2021$variables$AGEP$values,
+  GASP = vars2021$variables$GASP$values,
+  GRPIP = vars2021$variables$GRPIP$values,
+  JWAP = vars2021$variables$JWAP$values,
+  JWDP = vars2021$variables$JWDP$values,
+  JWMNP = vars2021$variables$JWMNP$values,
+  PWGTP = vars2021$variables$PWGTP$values,
+  FER = vars2021$variables$FER$values,
+  HHL = vars2021$variables$HHL$values,
+  SCH = vars2021$variables$SCH$values,
+  SCHL = vars2021$variables$SCHL$values,
+  SEX = vars2021$variables$SEX$values,
+  ST = vars2021$variables$ST$values,
+  REGION = vars2021$variables$REGION$values,
+  DIVISION = vars2021$variables$DIVISION$values
+  )
 ```
-
