@@ -14,13 +14,13 @@ library(tidyverse)
 library(dplyr)
 ```
 
-For this project, I will be working with 2021, 2022, 2023, and 2024 data from the Public Use Microdata Sample (PUMS) Census API. First, I obtained an api key from [the Census API website](https://api.census.gov/data/key_signup.html).
+This project works with 2021, 2022, 2023, and 2024 data from the Public Use Microdata Sample (PUMS) Census API. First, obtain an API key from [the Census API website](https://api.census.gov/data/key_signup.html).
 
 ```{r}
 key <- "6ba7e209537814e77a7b7fc5aa8df5552ef8591b"
 ```
 
-Sample API call:
+Sample API call to show that the key works:
 
 ```{r}
 pums2024 <- GET(paste0("https://api.census.gov/data/2024/acs/acs1/pums?get=SEX,PWGTP,MAR&SCHL=24&key=", key))
@@ -30,14 +30,17 @@ pums2024 <- GET(paste0("https://api.census.gov/data/2024/acs/acs1/pums?get=SEX,P
 
 #### Parsing Variable Values
 
-Get 2021 variables:
+Get 2021 variable values:
 
 ```{r}
 
+#Call the API:
 vars2021 <- GET("https://api.census.gov/data/2021/acs/acs1/pums/variables.json")
 
+#Parse the JSON:
 vars2021 <- fromJSON(rawToChar(vars2021$content))
 
+#Collect variable values into a list:
 vars2021 <- list(
   AGEP = vars2021$variables$AGEP$values,
   GASP = vars2021$variables$GASP$values,
@@ -55,4 +58,69 @@ vars2021 <- list(
   REGION = vars2021$variables$REGION$values,
   DIVISION = vars2021$variables$DIVISION$values
   )
+```
+
+Make this into a function that can be used for different years:
+
+```{r}
+
+get_var_values <- function(year){
+
+  vars <- GET(paste0("https://api.census.gov/data/", 
+                   year, 
+                   "/acs/acs1/pums/variables.json"))
+
+  vars <- fromJSON(rawToChar(vars$content))
+
+  if (year == 2021 | year == 2022){
+    vars <- list(
+      AGEP = vars$variables$AGEP$values,
+      GASP = vars$variables$GASP$values,
+      GRPIP = vars$variables$GRPIP$values,
+      JWAP = vars$variables$JWAP$values,
+      JWDP = vars$variables$JWDP$values,
+      JWMNP = vars$variables$JWMNP$values,
+      PWGTP = vars$variables$PWGTP$values,
+      FER = vars$variables$FER$values,
+      HHL = vars$variables$HHL$values,
+      SCH = vars$variables$SCH$values,
+      SCHL = vars$variables$SCHL$values,
+      SEX = vars$variables$SEX$values,
+      ST = vars$variables$ST$values,
+      REGION = vars$variables$REGION$values,
+      DIVISION = vars$variables$DIVISION$values
+      )
+  }
+  
+  else if (year == 2023 | year == 2024){
+    vars <- list(
+      AGEP = vars$variables$AGEP$values,
+      GASP = vars$variables$GASP$values,
+      GRPIP = vars$variables$GRPIP$values,
+      JWAP = vars$variables$JWAP$values,
+      JWDP = vars$variables$JWDP$values,
+      JWMNP = vars$variables$JWMNP$values,
+      PWGTP = vars$variables$PWGTP$values,
+      FER = vars$variables$FER$values,
+      HHL = vars$variables$HHL$values,
+      SCH = vars$variables$SCH$values,
+      SCHL = vars$variables$SCHL$values,
+      SEX = vars$variables$SEX$values,
+      STATE = vars$variables$STATE$values, #STATE is used instead of ST
+      REGION = vars$variables$REGION$values,
+      DIVISION = vars$variables$DIVISION$values
+      )
+    }
+  
+  return(vars)
+}
+```
+
+Use the function to get the variable values in each of the four years.
+
+```{r}
+vars2021 <- get_var_values(2021)
+vars2022 <- get_var_values(2022)
+vars2023 <- get_var_values(2023)
+vars2024 <- get_var_values(2024)
 ```
