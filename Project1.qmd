@@ -124,3 +124,19 @@ vars2022 <- get_var_values(2022)
 vars2023 <- get_var_values(2023)
 vars2024 <- get_var_values(2024)
 ```
+
+Combine into a single list object.
+
+```{r}
+allvars <- list(vars2021 = vars2021,
+                vars2022 = vars2022,
+                vars2023 = vars2023,
+                vars2024 = vars2024)
+```
+
+Write to a `.rds` file.
+
+```{r}
+write_rds(allvars, "data/variables.rds")
+```
+
