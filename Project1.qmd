@@ -134,9 +134,60 @@ allvars <- list(vars2021 = vars2021,
                 vars2024 = vars2024)
 ```
 
-Write to a `.rds` file.
+Write the combined list object to a `.rds` file.
 
 ```{r}
 write_rds(allvars, "data/variables.rds")
+```
+
+#### Parsing API Data
+
+Example API call:
+
+```{r}
+pums2024 <- GET(paste0("https://api.census.gov/data/2024/acs/acs1/pums?get=PWGTP,AGEP,SEX&ucgid=0400000US37&key=", key))
+```
+
+Parse the data returned by the `GET` function:
+
+```{r}
+content <- fromJSON(rawToChar(pums2024$content))
+
+#look at results
+head(content)
+```
+Remove the first row, which contains headers:
+
+```{r}
+content2 <- content[-1,]
+
+#look at results
+head(content2)
+```
+Make it numeric:
+
+```{r}
+content3 <- matrix(as.numeric(content2), ncol = 4)
+
+#look at results
+head(content3)
+```
+
+Format as a `tibble`:
+
+```{r}
+astibble <- as_tibble(content3)
+
+#look at results
+astibble
+```
+
+Fix the column names:
+
+```{r}
+colnames(astibble) <- c("PWGTP", "AGEP", "SEX", "STATE")
+
+#look at results
+astibble
 ```
 
