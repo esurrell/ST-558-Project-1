@@ -195,17 +195,17 @@ Turn categorical variable into factor using variable levels from the `.rds` file
 
 ```{r}
 rds <- read_rds("data/variables.rds")
-sex2021_values <- rds$vars2021$SEX$item
+sex2024_values <- rds$vars2024$SEX$item
 
-sex2021_clean <- data.frame(rownum = 1:length(as.numeric(names(sex2021_values))))
+sex2024_clean <- data.frame(rownum = 1:length(as.numeric(names(sex2024_values))))
 
-for (i in 1:length(as.numeric(names(sex2021_values)))){
-  sex2021_clean$num[i] <- as.numeric(names(sex2021_values))[i]
-  sex2021_clean$value[i] <- sex2021_values[[i]]
+for (i in 1:length(as.numeric(names(sex2024_values)))){
+  sex2024_clean$num[i] <- as.numeric(names(sex2024_values))[i]
+  sex2024_clean$value[i] <- sex2024_values[[i]]
 }
 
 #look at levels
-sex2021_clean
+sex2024_clean
 ```
 
 Second, update the tibble:
@@ -213,8 +213,8 @@ Second, update the tibble:
 ```{r}
 astibble <- astibble |>
   mutate(SEX = factor(SEX,
-                      sex2021_clean$num, 
-                      sex2021_clean$value))
+                      sex2024_clean$num, 
+                      sex2024_clean$value))
 
 #look at results
 astibble
@@ -223,17 +223,17 @@ astibble
 Do the same for the geography level:
 
 ```{r}
-state2021_values <- rds$vars2021$ST$item
+state2024_values <- rds$vars2024$ST$item
 
-state2021_clean <- data.frame(rownum = 1:length(as.numeric(names(state2021_values))))
+state2024_clean <- data.frame(rownum = 1:length(as.numeric(names(state2024_values))))
 
-for (i in 1:length(as.numeric(names(state2021_values)))){
-  state2021_clean$num[i] <- as.numeric(names(state2021_values))[i]
-  state2021_clean$value[i] <- state2021_values[[i]]
+for (i in 1:length(as.numeric(names(state2024_values)))){
+  state2024_clean$num[i] <- as.numeric(names(state2024_values))[i]
+  state2024_clean$value[i] <- state2024_values[[i]]
 }
 
 #look at levels
-state2021_clean
+state2024_clean
 ```
 
 Update the tibble:
@@ -241,10 +241,110 @@ Update the tibble:
 ```{r}
 astibble <- astibble |>
   mutate(STATE = factor(STATE,
-                      state2021_clean$num, 
-                      state2021_clean$value))
+                      state2024_clean$num, 
+                      state2024_clean$value))
 
 #look at results
 astibble
+```
+
+Last line as specified in the project instructions:
+
+```{r}
+class(astibble) <- c("census", class(astibble))
+```
+
+Wrap this up into a clean function that can be used with different parameters.
+
+Start with a helper function to take what is returned by `GET()` and turn it into a nice tibble:
+
+```{r}
+parse_from_get <- function(getobject){
+  
+  #parse data:
+  content <- fromJSON(rawToChar(getobject$content))
+  
+  #remove header row:
+  content <- content[-1,]
+  
+  #make numeric:
+  content <- matrix(as.numeric(content), ncol = 4)
+
+  #format as tibble and return:
+  return(as_tibble(content))
+}
+```
+
+Demonstrate use of this function:
+
+```{r}
+parse_from_get(pums2024)
+```
+
+Write a second helper function to convert variables into factors:
+
+```{r}
+
+convert_to_factor <- function(tibble, year, variable){
+  rds <- read_rds("data/variables.rds")
+  values <- rds[[paste0("vars", year)]]
+  values <- values[[variable]]
+  values <- values$item
+  
+  cleaned <- data.frame(rownum = 1:length(as.numeric(names(values))))
+
+  for (i in 1:length(as.numeric(names(values)))){
+    cleaned$num[i] <- as.numeric(names(values))[i]
+    cleaned$value[i] <- values[[i]]
+  }
+
+  tibble[[variable]] <- factor(tibble[[variable]],
+                      cleaned$num, 
+                      cleaned$value)
+  return(tibble)
+}
+
+```
+
+Demonstrate use of this function:
+
+```{r}
+
+fromget <- parse_from_get(pums2024)
+colnames(fromget) <- c("PWGTP", "AGEP", "SEX", "STATE")
+
+convert_to_factor(fromget, 2024, "SEX")
+convert_to_factor(fromget, 2024, "STATE")
+```
+
+Use these helper functions inside of larger function which queries the API:
+
+```{r}
+query <- function(year, nvar, cvar, geolevel, geovalue){
+  
+  #API call:
+  raw_api <- GET(paste0("https://api.census.gov/data/",
+    year,
+    "/acs/acs1/pums?get=",
+    paste(nvar, collapse = ","),
+    ",",
+    paste(cvar, collapse = ","),
+    "&ucgid=0400000US37&key=",
+    key))
+
+  #Parse:
+  tibble <- parse_from_get(raw_api)
+
+  #Fix column names:
+  colnames(tibble) <- c(nvar, cvar, geolevel)
+
+  #Convert to factors:
+  tibble <- convert_to_factor(tibble, year, "SEX")
+  tibble <- convert_to_factor(tibble, year, "STATE")
+  
+  return(tibble)
+}
+
+query(2024, c("PWGTP","AGEP"), "SEX", "STATE", 37)
 ```
 
