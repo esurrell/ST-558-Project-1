@@ -675,10 +675,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb41-31"><a href="#cb41-31" aria-hidden="true" tabindex="-1"></a>      <span class="fu">convert_to_factor</span>(year, i)</span>
 <span id="cb41-32"><a href="#cb41-32" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb41-33"><a href="#cb41-33" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb41-34"><a href="#cb41-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(tibble)</span>
-<span id="cb41-35"><a href="#cb41-35" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb41-36"><a href="#cb41-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-37"><a href="#cb41-37" aria-hidden="true" tabindex="-1"></a><span class="fu">query</span>(<span class="dv">2024</span>, <span class="fu">c</span>(<span class="st">"PWGTP"</span>,<span class="st">"AGEP"</span>), <span class="st">"SEX"</span>, <span class="st">"STATE"</span>, <span class="dv">37</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb41-34"><a href="#cb41-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">class</span>(tibble) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"census"</span>, <span class="fu">class</span>(tibble))</span>
+<span id="cb41-35"><a href="#cb41-35" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb41-36"><a href="#cb41-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(tibble)</span>
+<span id="cb41-37"><a href="#cb41-37" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Examples using the function:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">query</span>(<span class="dv">2024</span>, <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"AGEP"</span>), <span class="st">"SEX"</span>, <span class="st">"STATE"</span>, <span class="dv">37</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 114,270 × 4
    PWGTP  AGEP SEX    STATE            
@@ -694,6 +698,70 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  9    30    22 Male   North Carolina/NC
 10    37    67 Female North Carolina/NC
 # ℹ 114,260 more rows</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">query</span>(<span class="dv">2023</span>, <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"AGEP"</span>, <span class="st">"GASP"</span>), <span class="fu">c</span>(<span class="st">"SEX"</span>, <span class="st">"FER"</span>), <span class="st">"REGION"</span>, <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 590,717 × 6
+   PWGTP  AGEP  GASP SEX    FER                                           REGION
+   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt;                                         &lt;fct&gt; 
+ 1    69    94     3 Female N/A (less than 15 years/greater than 50 year… North…
+ 2    42    18     3 Male   N/A (less than 15 years/greater than 50 year… North…
+ 3    78    19     3 Female No                                            North…
+ 4    30    41     3 Female No                                            North…
+ 5     6    66     3 Male   N/A (less than 15 years/greater than 50 year… North…
+ 6    58    56     3 Male   N/A (less than 15 years/greater than 50 year… North…
+ 7    57    79     3 Female N/A (less than 15 years/greater than 50 year… North…
+ 8    12    78     3 Female N/A (less than 15 years/greater than 50 year… North…
+ 9    52    42     3 Male   N/A (less than 15 years/greater than 50 year… North…
+10    70    91     3 Female N/A (less than 15 years/greater than 50 year… North…
+# ℹ 590,707 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="combining-years" class="level4">
+<h4 class="anchored" data-anchor-id="combining-years">Combining Years</h4>
+<p>Write a function that calls the single-year function as many times as needed and then combines the data into one final tibble with a year variable.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>multiyear_query <span class="ot">&lt;-</span> <span class="cf">function</span>(years, nvar, cvar, geolevel, geovalue){</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  firstyear <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (year <span class="cf">in</span> years){</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(firstyear<span class="sc">==</span><span class="dv">1</span>){</span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>      tibble <span class="ot">&lt;-</span> <span class="fu">query</span>(year, nvar, cvar, geolevel, geovalue) <span class="sc">|&gt;</span></span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="at">year =</span> year)</span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>      firstyear <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> {</span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>      tibble <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(tibble,</span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>      <span class="fu">query</span>(year, nvar, cvar, geolevel, geovalue) <span class="sc">|&gt;</span></span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="at">year =</span> year))</span>
+<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb46-18"><a href="#cb46-18" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb46-19"><a href="#cb46-19" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-20"><a href="#cb46-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(tibble)</span>
+<span id="cb46-21"><a href="#cb46-21" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb46-22"><a href="#cb46-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-23"><a href="#cb46-23" aria-hidden="true" tabindex="-1"></a>multiyear <span class="ot">&lt;-</span> <span class="fu">multiyear_query</span>(<span class="fu">c</span>(<span class="dv">2023</span>, <span class="dv">2024</span>), <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"AGEP"</span>), <span class="st">"SEX"</span>, <span class="st">"STATE"</span>, <span class="dv">37</span>)</span>
+<span id="cb46-24"><a href="#cb46-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-25"><a href="#cb46-25" aria-hidden="true" tabindex="-1"></a>multiyear</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 226,190 × 5
+   PWGTP  AGEP SEX    STATE              year
+   &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt;             &lt;dbl&gt;
+ 1    62    18 Female North Carolina/NC  2023
+ 2    94    93 Female North Carolina/NC  2023
+ 3    73    22 Male   North Carolina/NC  2023
+ 4    63    39 Male   North Carolina/NC  2023
+ 5    50    19 Male   North Carolina/NC  2023
+ 6    41    39 Male   North Carolina/NC  2023
+ 7    16    26 Female North Carolina/NC  2023
+ 8    10    19 Male   North Carolina/NC  2023
+ 9    53    34 Male   North Carolina/NC  2023
+10     7    19 Female North Carolina/NC  2023
+# ℹ 226,180 more rows</code></pre>
 </div>
 </div>
 

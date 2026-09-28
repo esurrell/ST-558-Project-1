@@ -363,9 +363,48 @@ query <- function(year, nvar, cvar, geolevel, geovalue){
       convert_to_factor(year, i)
   }
   
+  class(tibble) <- c("census", class(tibble))
+  
+  return(tibble)
+}
+```
+
+Examples using the function:
+
+```{r}
+query(2024, c("PWGTP", "AGEP"), "SEX", "STATE", 37)
+query(2023, c("PWGTP", "AGEP", "GASP"), c("SEX", "FER"), "REGION", 1)
+```
+
+#### Combining Years
+
+Write a function that calls the single-year function as many times as needed and then combines the data into one final tibble with a year variable.
+
+```{r}
+multiyear_query <- function(years, nvar, cvar, geolevel, geovalue){
+  
+  firstyear <- 1
+  
+  for (year in years){
+    
+    if(firstyear==1){
+      tibble <- query(year, nvar, cvar, geolevel, geovalue) |>
+        mutate(year = year)
+  
+      firstyear <- 0
+    }
+    else {
+      tibble <- dplyr::bind_rows(tibble,
+      query(year, nvar, cvar, geolevel, geovalue) |>
+        mutate(year = year))
+    }
+  }
+  
   return(tibble)
 }
 
-query(2024, c("PWGTP","AGEP"), "SEX", "STATE", 37)
+multiyear <- multiyear_query(c(2023, 2024), c("PWGTP", "AGEP"), "SEX", "STATE", 37)
+
+multiyear
 ```
 
