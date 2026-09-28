@@ -167,7 +167,7 @@ head(content)
 Make it numeric:
 
 ```{r}
-content <- matrix(as.numeric(content), ncol = 4)
+content <- matrix(as.numeric(content), ncol = ncol(content))
 
 #look at results
 head(content)
@@ -268,7 +268,7 @@ parse_from_get <- function(getobject){
   content <- content[-1,]
   
   #make numeric:
-  content <- matrix(as.numeric(content), ncol = 4)
+  content <- matrix(as.numeric(content), ncol = ncol(content))
 
   #format as tibble and return:
   return(as_tibble(content))
@@ -313,14 +313,29 @@ Demonstrate use of this function:
 fromget <- parse_from_get(pums2024)
 colnames(fromget) <- c("PWGTP", "AGEP", "SEX", "STATE")
 
-convert_to_factor(fromget, 2024, "SEX")
-convert_to_factor(fromget, 2024, "STATE")
+fromget |>
+  convert_to_factor(2024, "SEX") |>
+  convert_to_factor(2024, "STATE")
+
+#done using a loop:
+looped <- fromget
+for (i in c("SEX", "STATE")){
+  looped <- looped |>
+      convert_to_factor(2024, i)
+}
+
+looped
 ```
 
 Use these helper functions inside of larger function which queries the API:
 
 ```{r}
 query <- function(year, nvar, cvar, geolevel, geovalue){
+  
+  #translate geolevel into numeric geolevel:
+  if (geolevel == "STATE"){geolevel_translated <- "040"}
+  else if (geolevel == "REGION"){geolevel_translated <- "020"}
+  else if (geolevel == "DIVISION"){geolevel_translated < "030"}
   
   #API call:
   raw_api <- GET(paste0("https://api.census.gov/data/",
@@ -329,7 +344,11 @@ query <- function(year, nvar, cvar, geolevel, geovalue){
     paste(nvar, collapse = ","),
     ",",
     paste(cvar, collapse = ","),
-    "&ucgid=0400000US37&key=",
+    "&ucgid=",
+    geolevel_translated,
+    "0000US",
+    geovalue,
+    "&key=",
     key))
 
   #Parse:
@@ -338,9 +357,11 @@ query <- function(year, nvar, cvar, geolevel, geovalue){
   #Fix column names:
   colnames(tibble) <- c(nvar, cvar, geolevel)
 
-  #Convert to factors:
-  tibble <- convert_to_factor(tibble, year, "SEX")
-  tibble <- convert_to_factor(tibble, year, "STATE")
+  #Convert character variables and geolevel to factors:
+  for (i in c(cvar, geolevel)){
+    tibble <- tibble |>
+      convert_to_factor(year, i)
+  }
   
   return(tibble)
 }
