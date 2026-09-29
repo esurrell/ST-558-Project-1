@@ -12,25 +12,38 @@ library(httr)
 library(jsonlite)
 library(tidyverse)
 library(dplyr)
+library(lubridate)
 ```
 
-This project works with 2021, 2022, 2023, and 2024 data from the Public Use Microdata Sample (PUMS) Census API. First, obtain an API key from [the Census API website](https://api.census.gov/data/key_signup.html).
+### Introduction
+
+For this project, we will be working with 2021, 2022, 2023, and 2024 data from the Public Use Microdata Sample (PUMS) Census API. First, we obtain an API key from [the Census API website](https://api.census.gov/data/key_signup.html).
 
 ```{r}
+#save API key into a variable that can easily be used again later
 key <- "6ba7e209537814e77a7b7fc5aa8df5552ef8591b"
 ```
 
 Sample API call to show that the key works:
 
 ```{r}
-pums2024 <- GET(paste0("https://api.census.gov/data/2024/acs/acs1/pums?get=SEX,PWGTP,MAR&SCHL=24&key=", key))
+exampleAPI <- GET(paste0(
+  "https://api.census.gov/data/2024/acs/acs1/pums?get=SEX,PWGTP,MAR&SCHL=24&key=",
+  key))
+
+#view results
+names(exampleAPI)
+
+exampleAPI$status_code
 ```
+
+A status code of 200 means that the API call was successful.
 
 ### Part 1: Data Processing
 
 #### Parsing Variable Values
 
-Get 2021 variable values:
+First, we will practice parsing variable values using 2021 variables.
 
 ```{r}
 
@@ -39,6 +52,10 @@ vars2021 <- GET("https://api.census.gov/data/2021/acs/acs1/pums/variables.json")
 
 #Parse the JSON:
 vars2021 <- fromJSON(rawToChar(vars2021$content))
+
+#View examples of values:
+vars2021$variables$AGEP$values
+vars2021$variables$SEX$values
 
 #Collect variable values into a list:
 vars2021 <- list(
@@ -58,20 +75,26 @@ vars2021 <- list(
   REGION = vars2021$variables$REGION$values,
   DIVISION = vars2021$variables$DIVISION$values
   )
+
+#view results
+names(vars2021)
 ```
 
-Make this into a function that can be used for different years:
+That worked great for the 2021 data. Now let's generalize this into a function that can be used for different years:
 
 ```{r}
 
 get_var_values <- function(year){
 
+  #API call
   vars <- GET(paste0("https://api.census.gov/data/", 
                    year, 
                    "/acs/acs1/pums/variables.json"))
 
+  #Parse the JSON
   vars <- fromJSON(rawToChar(vars$content))
 
+  #Collect variable values into a list
   if (year == 2021 | year == 2022){
     vars <- list(
       AGEP = vars$variables$AGEP$values,
@@ -106,12 +129,14 @@ get_var_values <- function(year){
       SCH = vars$variables$SCH$values,
       SCHL = vars$variables$SCHL$values,
       SEX = vars$variables$SEX$values,
-      STATE = vars$variables$STATE$values, #STATE is used instead of ST
+      STATE = vars$variables$STATE$values,
+#NOTE: STATE is used instead of ST in 2023 and 2024
       REGION = vars$variables$REGION$values,
       DIVISION = vars$variables$DIVISION$values
       )
     }
   
+  #Return the list of variables
   return(vars)
 }
 ```
@@ -125,13 +150,18 @@ vars2023 <- get_var_values(2023)
 vars2024 <- get_var_values(2024)
 ```
 
-Combine into a single list object.
+Combine the four years into a single list object (a list of four lists).
 
 ```{r}
 allvars <- list(vars2021 = vars2021,
                 vars2022 = vars2022,
                 vars2023 = vars2023,
                 vars2024 = vars2024)
+
+#view results
+names(allvars)
+names(allvars$vars2021)
+allvars$vars2021$REGION$item
 ```
 
 Write the combined list object to a `.rds` file.
@@ -142,13 +172,18 @@ write_rds(allvars, "data/variables.rds")
 
 #### Parsing API Data
 
-Example API call:
+Begin with an example of a single API call:
 
 ```{r}
-pums2024 <- GET(paste0("https://api.census.gov/data/2024/acs/acs1/pums?get=PWGTP,AGEP,SEX&ucgid=0400000US37&key=", key))
+pums2024 <- GET(paste0(
+  "https://api.census.gov/data/2024/acs/acs1/pums?get=", #year
+  "PWGTP,AGEP,GASP,GRPIP,JWAP,JWDP,JWMNP,", #numeric variables
+  "FER,HHL,SCH,SCHL,SEX", #categorical variables
+  "&ucgid=0400000US37&key=", #geography
+  key))
 ```
 
-Parse the data returned by the `GET` function:
+Parse the data returned by the `GET()` function:
 
 ```{r}
 content <- fromJSON(rawToChar(pums2024$content))
@@ -156,7 +191,8 @@ content <- fromJSON(rawToChar(pums2024$content))
 #look at results
 head(content)
 ```
-Remove the first row, which contains headers:
+
+Remove the first row, which contains headers.
 
 ```{r}
 content <- content[-1,]
@@ -164,7 +200,8 @@ content <- content[-1,]
 #look at results
 head(content)
 ```
-Make it numeric:
+
+Transform all the values from character into numeric.
 
 ```{r}
 content <- matrix(as.numeric(content), ncol = ncol(content))
@@ -173,7 +210,7 @@ content <- matrix(as.numeric(content), ncol = ncol(content))
 head(content)
 ```
 
-Format as a `tibble`:
+Format as a `tibble`.
 
 ```{r}
 astibble <- as_tibble(content)
@@ -182,81 +219,7 @@ astibble <- as_tibble(content)
 astibble
 ```
 
-Fix the column names:
-
-```{r}
-colnames(astibble) <- c("PWGTP", "AGEP", "SEX", "STATE")
-
-#look at results
-astibble
-```
-
-Turn categorical variable into factor using variable levels from the `.rds` file. First, prepare the variable levels:
-
-```{r}
-rds <- read_rds("data/variables.rds")
-sex2024_values <- rds$vars2024$SEX$item
-
-sex2024_clean <- data.frame(rownum = 1:length(as.numeric(names(sex2024_values))))
-
-for (i in 1:length(as.numeric(names(sex2024_values)))){
-  sex2024_clean$num[i] <- as.numeric(names(sex2024_values))[i]
-  sex2024_clean$value[i] <- sex2024_values[[i]]
-}
-
-#look at levels
-sex2024_clean
-```
-
-Second, update the tibble:
-
-```{r}
-astibble <- astibble |>
-  mutate(SEX = factor(SEX,
-                      sex2024_clean$num, 
-                      sex2024_clean$value))
-
-#look at results
-astibble
-```
-
-Do the same for the geography level:
-
-```{r}
-state2024_values <- rds$vars2024$ST$item
-
-state2024_clean <- data.frame(rownum = 1:length(as.numeric(names(state2024_values))))
-
-for (i in 1:length(as.numeric(names(state2024_values)))){
-  state2024_clean$num[i] <- as.numeric(names(state2024_values))[i]
-  state2024_clean$value[i] <- state2024_values[[i]]
-}
-
-#look at levels
-state2024_clean
-```
-
-Update the tibble:
-
-```{r}
-astibble <- astibble |>
-  mutate(STATE = factor(STATE,
-                      state2024_clean$num, 
-                      state2024_clean$value))
-
-#look at results
-astibble
-```
-
-Last line as specified in the project instructions:
-
-```{r}
-class(astibble) <- c("census", class(astibble))
-```
-
-Wrap this up into a clean function that can be used with different parameters.
-
-Start with a helper function to take what is returned by `GET()` and turn it into a nice tibble:
+That is a pretty good start. We will need to fix the column names and do further cleaning, but let's generalize the process up to this point into a helper function to take what is returned by `GET()` and turn it into a numeric tibble:
 
 ```{r}
 parse_from_get <- function(getobject){
@@ -275,59 +238,134 @@ parse_from_get <- function(getobject){
 }
 ```
 
-Demonstrate use of this function:
+Example:
 
 ```{r}
 parse_from_get(pums2024)
 ```
 
-Write a second helper function to convert variables into factors:
+Great! Now continue with cleaning, starting with fixing the column names.
+
+```{r}
+colnames(astibble) <- c("PWGTP","AGEP","GASP","GRPIP","JWAP","JWDP","JWMNP",
+                        "FER","HHL","SCH","SCHL","SEX",
+                        "STATE")
+
+#view results
+astibble
+```
+
+Now we have a tibble with proper column names, but everything is stored as `<dbl>`.
+
+Turn categorical variables into factors using variable levels from the `.rds` file. First, prepare the variable levels. Using SCH as an example:
+
+```{r}
+#read from .rds file
+rds <- read_rds("data/variables.rds")
+
+#narrow down to where the keys and values are
+sch2024_values <- rds$vars2024$SCH$item
+
+#begin a data.frame to store keys and values
+sch2024_clean <- data.frame(rownum = 1:length(as.numeric(names(sch2024_values))))
+
+#loop through keys and values and assign them to the data.frame
+for (i in 1:length(as.numeric(names(sch2024_values)))){
+  #assign key
+  sch2024_clean$num[i] <- as.numeric(names(sch2024_values))[i]
+  #assign value
+  sch2024_clean$value[i] <- sch2024_values[[i]]
+}
+
+#view the cleaned data.frame which holds the levels
+sch2024_clean
+```
+
+Next, update the tibble to apply the key-value pairs for our factor variable SCH.
+
+```{r}
+astibble <- astibble |>
+  mutate(SCH = factor(SCH, sch2024_clean$num, sch2024_clean$value))
+
+#view results
+astibble |>
+  select("SCH")
+```
+
+Now SCH is a factor variable!
+
+But, there are many variables that we may need to convert into factor variables.
+
+Generalize this process into a tidy-style function that translates a numeric variable into a factor. It will take a `tibble` as its first parameter, and return a `tibble`.
 
 ```{r}
 
 convert_to_factor <- function(tibble, year, variable){
+  
+  #read in the .rds file
   rds <- read_rds("data/variables.rds")
+  
+  #narrow down to where the specific variable's levels are
   values <- rds[[paste0("vars", year)]]
   values <- values[[variable]]
   values <- values$item
   
+  #initalize a data.frame to hold the levels
   cleaned <- data.frame(rownum = 1:length(as.numeric(names(values))))
 
+  #loop through keys and levels and assign them to the data.frame
   for (i in 1:length(as.numeric(names(values)))){
+    #assign keys
     cleaned$num[i] <- as.numeric(names(values))[i]
+    #assign values
     cleaned$value[i] <- values[[i]]
   }
 
+  #update the tibble to format the variable as a factor!
   tibble[[variable]] <- factor(tibble[[variable]],
                       cleaned$num, 
                       cleaned$value)
+  
+  #return the updated tibble
   return(tibble)
 }
 
 ```
 
-Demonstrate use of this function:
+With this function, we should now be able to convert the other variables to factors very easily.
 
 ```{r}
-
-fromget <- parse_from_get(pums2024)
-colnames(fromget) <- c("PWGTP", "AGEP", "SEX", "STATE")
-
-fromget |>
+astibble <- astibble |>
+  convert_to_factor(2024, "FER") |>
+  convert_to_factor(2024, "HHL") |>
+  convert_to_factor(2024, "SCHL") |>
   convert_to_factor(2024, "SEX") |>
   convert_to_factor(2024, "STATE")
 
-#done using a loop:
-looped <- fromget
-for (i in c("SEX", "STATE")){
-  looped <- looped |>
-      convert_to_factor(2024, i)
-}
-
-looped
+#view results
+astibble |>
+  select(FER, HHL, SCH, SCHL, SEX, STATE)
 ```
 
-Use these helper functions inside of larger function which queries the API:
+Now all the categorical variables are stored as factors!
+
+Next, clean the time variables. **THIS PART IS STILL IN PROGRESS**
+
+```{r}
+test <- astibble |>
+  convert_to_factor(2024, "JWAP") |>
+  convert_to_factor(2024, "JWDP")
+```
+
+Add **census** class:
+
+```{r}
+class(astibble) <- c("census", class(astibble))
+```
+
+#### Combining It All Together
+
+Now that we have gone through a full example of cleaning a single API call, we can use the helper functions we created to create an overall function which queries the API for a single year.
 
 ```{r}
 query <- function(year, nvar, cvar, geolevel, geovalue){
@@ -363,6 +401,7 @@ query <- function(year, nvar, cvar, geolevel, geovalue){
       convert_to_factor(year, i)
   }
   
+  #Add census class:
   class(tibble) <- c("census", class(tibble))
   
   return(tibble)
@@ -402,9 +441,22 @@ multiyear_query <- function(years, nvar, cvar, geolevel, geovalue){
   
   return(tibble)
 }
+```
 
+Examples:
+
+```{r}
 multiyear <- multiyear_query(c(2023, 2024), c("PWGTP", "AGEP"), "SEX", "STATE", 37)
 
 multiyear
 ```
 
+### Part 2: Writing a Generic Function for Summarizing
+
+#### Numeric Summaries
+
+#### Graphical Summaries
+
+### Investigation
+
+Investigate something interesting from the data using the functions above!
