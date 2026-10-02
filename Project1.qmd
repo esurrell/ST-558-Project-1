@@ -1,8 +1,10 @@
 ---
 title: "Project 1"
 author: "Emily Surrell"
-date: 9/30/2026
+date: 10/5/2026
 format: html
+execute:
+  error: true
 ---
 
 Bring in libraries needed for this project.
@@ -13,6 +15,7 @@ library(jsonlite)
 library(tidyverse)
 library(dplyr)
 library(lubridate)
+library(hms)
 ```
 
 ### Introduction
@@ -53,8 +56,10 @@ vars2021 <- GET("https://api.census.gov/data/2021/acs/acs1/pums/variables.json")
 #Parse the JSON:
 vars2021 <- fromJSON(rawToChar(vars2021$content))
 
-#View examples of values:
+#View example:
 vars2021$variables$AGEP$values
+
+#View example:
 vars2021$variables$SEX$values
 
 #Collect variable values into a list:
@@ -85,6 +90,11 @@ That worked great for the 2021 data. Now let's generalize this into a function t
 ```{r}
 
 get_var_values <- function(year){
+  
+  #Validate inputs
+  if (!(year %in% c(2021, 2022, 2023, 2024))){
+    stop("Invalid year: Please enter 2021, 2022, 2023, or 2024")
+  }
 
   #API call
   vars <- GET(paste0("https://api.census.gov/data/", 
@@ -95,7 +105,8 @@ get_var_values <- function(year){
   vars <- fromJSON(rawToChar(vars$content))
 
   #Collect variable values into a list
-  if (year == 2021 | year == 2022){
+  
+  if (year %in% c(2021, 2022)){
     vars <- list(
       AGEP = vars$variables$AGEP$values,
       GASP = vars$variables$GASP$values,
@@ -113,9 +124,7 @@ get_var_values <- function(year){
       REGION = vars$variables$REGION$values,
       DIVISION = vars$variables$DIVISION$values
       )
-  }
-  
-  else if (year == 2023 | year == 2024){
+  } else if (year %in% c(2023, 2024)){
     vars <- list(
       AGEP = vars$variables$AGEP$values,
       GASP = vars$variables$GASP$values,
@@ -130,15 +139,21 @@ get_var_values <- function(year){
       SCHL = vars$variables$SCHL$values,
       SEX = vars$variables$SEX$values,
       STATE = vars$variables$STATE$values,
-#NOTE: STATE is used instead of ST in 2023 and 2024
+        #NOTE: STATE is used instead of ST in 2023 and 2024
       REGION = vars$variables$REGION$values,
       DIVISION = vars$variables$DIVISION$values
       )
-    }
+  }
   
   #Return the list of variables
   return(vars)
 }
+```
+
+Test to show that the function checks for an invalid year:
+
+```{r}
+get_var_values(2025)
 ```
 
 Use the function to get the variable values in each of the four years.
@@ -150,7 +165,7 @@ vars2023 <- get_var_values(2023)
 vars2024 <- get_var_values(2024)
 ```
 
-Combine the four years into a single list object (a list of four lists).
+Combine the four years into a single `list` object (a `list` of four `list`s).
 
 ```{r}
 allvars <- list(vars2021 = vars2021,
@@ -158,9 +173,13 @@ allvars <- list(vars2021 = vars2021,
                 vars2023 = vars2023,
                 vars2024 = vars2024)
 
-#view results
+#View results
 names(allvars)
+
+#View 2021 variables
 names(allvars$vars2021)
+
+#View REGION variable from 2021
 allvars$vars2021$REGION$item
 ```
 
@@ -190,21 +209,29 @@ content <- fromJSON(rawToChar(pums2024$content))
 
 #look at results
 head(content)
+
+#look at class
+class(content)
+
+#look at type
+typeof(content)
+
+#look at structure
+str(content)
 ```
 
-Remove the first row, which contains headers.
+What we got was a character matrix, where the first row contains the headers. Set the column names to be these headers.
 
 ```{r}
-content <- content[-1,]
+colnames(content) <- content[1,]
 
 #look at results
 head(content)
 ```
-
-Transform all the values from character into numeric.
+Then, drop the first row with the headers that we no longer need.
 
 ```{r}
-content <- matrix(as.numeric(content), ncol = ncol(content))
+content <- content[-1,]
 
 #look at results
 head(content)
@@ -219,7 +246,17 @@ astibble <- as_tibble(content)
 astibble
 ```
 
-That is a pretty good start. We will need to fix the column names and do further cleaning, but let's generalize the process up to this point into a helper function to take what is returned by `GET()` and turn it into a numeric tibble:
+Everything is formatted as `<chr>`. Let's make all variables numeric.
+
+```{r}
+astibble <- astibble |>
+  mutate(across(everything(), as.numeric))
+
+#look at results
+astibble
+```
+
+That is a pretty good start. We will need to do further cleaning, but let's generalize the process up to this point into a helper function to take what is returned by `GET()` and turn it into a tibble that is full of `<dbl>` values:
 
 ```{r}
 parse_from_get <- function(getobject){
@@ -227,14 +264,18 @@ parse_from_get <- function(getobject){
   #parse data:
   content <- fromJSON(rawToChar(getobject$content))
   
+  #assign column names:
+  colnames(content) <- content[1,]
+  
   #remove header row:
   content <- content[-1,]
-  
-  #make numeric:
-  content <- matrix(as.numeric(content), ncol = ncol(content))
 
-  #format as tibble and return:
-  return(as_tibble(content))
+  #format as numeric tibble:
+  tibble <- as_tibble(content) |>
+    mutate(across(everything(), as.numeric))
+  
+  #return tibble:
+  return(tibble)
 }
 ```
 
@@ -244,18 +285,7 @@ Example:
 parse_from_get(pums2024)
 ```
 
-Great! Now continue with cleaning, starting with fixing the column names.
-
-```{r}
-colnames(astibble) <- c("PWGTP","AGEP","GASP","GRPIP","JWAP","JWDP","JWMNP",
-                        "FER","HHL","SCH","SCHL","SEX",
-                        "STATE")
-
-#view results
-astibble
-```
-
-Now we have a tibble with proper column names, but everything is stored as `<dbl>`.
+Great! Now continue with cleaning. We have a tibble with proper column names, but everything is stored as `<dbl>`.
 
 Turn categorical variables into factors using variable levels from the `.rds` file. First, prepare the variable levels. Using SCH as an example:
 
@@ -266,8 +296,17 @@ rds <- read_rds("data/variables.rds")
 #narrow down to where the keys and values are
 sch2024_values <- rds$vars2024$SCH$item
 
+#view example:
+names(sch2024_values)
+
+#view example:
+sch2024_values
+
 #begin a data.frame to store keys and values
 sch2024_clean <- data.frame(rownum = 1:length(as.numeric(names(sch2024_values))))
+
+#view example:
+sch2024_clean
 
 #loop through keys and values and assign them to the data.frame
 for (i in 1:length(as.numeric(names(sch2024_values)))){
@@ -277,7 +316,7 @@ for (i in 1:length(as.numeric(names(sch2024_values)))){
   sch2024_clean$value[i] <- sch2024_values[[i]]
 }
 
-#view the cleaned data.frame which holds the levels
+#view example:
 sch2024_clean
 ```
 
@@ -296,11 +335,19 @@ Now SCH is a factor variable!
 
 But, there are many variables that we may need to convert into factor variables.
 
-Generalize this process into a tidy-style function that translates a numeric variable into a factor. It will take a `tibble` as its first parameter, and return a `tibble`.
+Generalize this process into a tidy-style function that translates a numeric variable into a factor variable. It will take a `tibble` as its first parameter, and return a `tibble`.
 
 ```{r}
 
 convert_to_factor <- function(tibble, year, variable){
+  
+  #validate inputs
+  if (!(is_tibble(tibble))) {
+    stop("First argument is not a tibble.")
+  }
+  else if (!(year %in% c(2021, 2022, 2023, 2024))){
+    stop("Invalid year: Please enter 2021, 2022, 2023, or 2024")
+  }
   
   #read in the .rds file
   rds <- read_rds("data/variables.rds")
@@ -310,7 +357,7 @@ convert_to_factor <- function(tibble, year, variable){
   values <- values[[variable]]
   values <- values$item
   
-  #initalize a data.frame to hold the levels
+  #initialize a data.frame to hold the levels
   cleaned <- data.frame(rownum = 1:length(as.numeric(names(values))))
 
   #loop through keys and levels and assign them to the data.frame
@@ -349,12 +396,84 @@ astibble |>
 
 Now all the categorical variables are stored as factors!
 
-Next, clean the time variables. **THIS PART IS STILL IN PROGRESS**
+Next, clean the time variables. First, we can convert them to factors and then to characters:
 
 ```{r}
-test <- astibble |>
+astibble <- astibble |>
   convert_to_factor(2024, "JWAP") |>
-  convert_to_factor(2024, "JWDP")
+  convert_to_factor(2024, "JWDP") |>
+  mutate(across(c(JWAP, JWDP), as.character))
+
+#view results
+astibble |>
+  select(JWAP, JWDP)
+```
+
+An example of a value in these columns would be "7:30 a.m. to 7:34 a.m.". Parse this string.
+
+```{r}
+string <- "7:30 a.m. to 7:34 a.m."
+
+#split the string into the starting time and the ending time
+split <- word(string, c(1,-1), sep = " to ")
+
+#view starting time and ending time split apart
+split
+```
+Now that the starting time and the ending time are separated, convert each of them from character format to a time format.
+
+```{r}
+split <- parse_date_time(split, orders = "HM")
+
+#view starting time and ending time, formatted as times
+split
+
+#also see what happens when an invalid value is entered
+parse_date_time("not_a_time", orders = "HM") #gives warnings
+parse_date_time("not_a_time", orders = "HM", quiet = TRUE) #returns NA without a warning
+```
+Find the midpoint between the starting time and the ending time.
+
+```{r}
+median(split)
+```
+Lastly, format it to show just a time instead of a date and time (this uses the `hms` package).
+
+```{r}
+as_hms(median(split))
+```
+
+Put it all together into a function:
+
+```{r}
+median_time <- function(string){
+  as_hms(median(parse_date_time(
+        word(string, c(1,-1), sep = " to "),
+        orders = "HM",
+        quiet = TRUE)))
+}
+
+```
+Test the function:
+
+```{r}
+median_time("6:00 a.m. to 6:04 a.m.")
+median_time("7:01 a.m. to 7:03 a.m.")
+median_time("not_a_time")
+```
+Now test this on our example tibble:
+
+```{r}
+
+astibble <- astibble |>
+  rowwise() |> #rowwise groups by one row at a time
+  mutate(JWAP = median_time(JWAP),
+         JWDP = median_time(JWDP))
+
+#view results
+astibble |>
+  select(JWAP, JWDP)
+
 ```
 
 Add **census** class:
@@ -365,7 +484,7 @@ class(astibble) <- c("census", class(astibble))
 
 #### Combining It All Together
 
-Now that we have gone through a full example of cleaning a single API call, we can use the helper functions we created to create an overall function which queries the API for a single year.
+Now that we have gone through a full example of cleaning a single API call, we can use the helper functions we created to create an overall function which queries the API for a single year and then does all the data cleaning.
 
 ```{r}
 query <- function(year, nvar, cvar, geolevel, geovalue){
@@ -389,16 +508,27 @@ query <- function(year, nvar, cvar, geolevel, geovalue){
     "&key=",
     key))
 
-  #Parse:
+  #Parse and convert into a numeric tibble using helper function:
   tibble <- parse_from_get(raw_api)
 
-  #Fix column names:
-  colnames(tibble) <- c(nvar, cvar, geolevel)
-
-  #Convert character variables and geolevel to factors:
+  #Convert character variables and geolevel to factors using helper function:
   for (i in c(cvar, geolevel)){
     tibble <- tibble |>
       convert_to_factor(year, i)
+  }
+  
+  #Convert time variables using helper functions:
+  if ("JWAP" %in% nvar){
+    tibble <- tibble |>
+      convert_to_factor(year, "JWAP") |>
+      rowwise() |>
+      mutate(JWAP = median_time(JWAP))
+  }
+  if ("JWDP" %in% nvar){
+    tibble <- tibble |>
+      convert_to_factor(year, "JWDP") |>
+      rowwise() |>
+      mutate(JWDP = median_time(JWDP))
   }
   
   #Add census class:
@@ -413,6 +543,7 @@ Examples using the function:
 ```{r}
 query(2024, c("PWGTP", "AGEP"), "SEX", "STATE", 37)
 query(2023, c("PWGTP", "AGEP", "GASP"), c("SEX", "FER"), "REGION", 1)
+query(2024, c("PWGTP", "JWAP", "JWDP"), "SCH", "STATE", 36)
 ```
 
 #### Combining Years
@@ -422,23 +553,29 @@ Write a function that calls the single-year function as many times as needed and
 ```{r}
 multiyear_query <- function(years, nvar, cvar, geolevel, geovalue){
   
+  #initialize a flag just to keep track of whether this is first time running the single-year query, or a subsequent time running it
   firstyear <- 1
   
   for (year in years){
     
     if(firstyear==1){
+      
+      #for the first year: run the single-year query and assign the year variable
       tibble <- query(year, nvar, cvar, geolevel, geovalue) |>
         mutate(year = year)
   
+      #change the firstyearflag for the next iteration of the for loop
       firstyear <- 0
-    }
-    else {
+    } else {
+      
+      #for every year after the first year, use dplyr::bind_rows to append new rows to the working tibble
       tibble <- dplyr::bind_rows(tibble,
       query(year, nvar, cvar, geolevel, geovalue) |>
         mutate(year = year))
     }
   }
   
+  #after all years have been processed, return the final tibble
   return(tibble)
 }
 ```
@@ -446,9 +583,11 @@ multiyear_query <- function(years, nvar, cvar, geolevel, geovalue){
 Examples:
 
 ```{r}
-multiyear <- multiyear_query(c(2023, 2024), c("PWGTP", "AGEP"), "SEX", "STATE", 37)
+#Example:
+multiyear_query(c(2023, 2024), c("PWGTP", "AGEP"), "SEX", "STATE", 37)
 
-multiyear
+#Example:
+multiyear_query(c(2021, 2023), c("PWGTP", "JWAP"), c("FER", "HHL"), "DIVISION", 9)
 ```
 
 ### Part 2: Writing a Generic Function for Summarizing
