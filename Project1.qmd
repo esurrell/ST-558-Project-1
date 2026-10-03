@@ -34,9 +34,10 @@ exampleAPI <- GET(paste0(
   "https://api.census.gov/data/2024/acs/acs1/pums?get=SEX,PWGTP,MAR&SCHL=24&key=",
   key))
 
-#view results
+#view outline of results
 names(exampleAPI)
 
+#view status code
 exampleAPI$status_code
 ```
 
@@ -409,66 +410,100 @@ astibble |>
   select(JWAP, JWDP)
 ```
 
-An example of a value in these columns would be "7:30 a.m. to 7:34 a.m.". Parse this string.
+Two examples of values in these columns would be "7:30 a.m. to 7:34 a.m." and "6:10 a.m. to 6:14 a.m.". Another example is "N/A (not a worker; worker who worked from home)", for which we will want to assign an `NA` value. Store these example values in a vector.
 
 ```{r}
-string <- "7:30 a.m. to 7:34 a.m."
+strings <- c("7:30 a.m. to 7:34 a.m.",
+             "6:10 a.m. to 6:14 a.m.",
+             "N/A (not a worker; worker who worked from home)")
 
-#split the string into the starting time and the ending time
-split <- word(string, c(1,-1), sep = " to ")
-
-#view starting time and ending time split apart
-split
+#view vector
+strings
 ```
+
+Use the `word()` function to split the strings into a starting time and an ending time.
+
+```{r}
+start <- word(strings, 1, sep = " to ")
+end <- word(strings, -1, sep = " to ")
+
+#view starting times and ending times split apart
+start
+end
+```
+
 Now that the starting time and the ending time are separated, convert each of them from character format to a time format.
 
 ```{r}
-split <- parse_date_time(split, orders = "HM")
 
-#view starting time and ending time, formatted as times
-split
+start <- as_hms(parse_date_time(start, orders ="HM", quiet = TRUE))
+end <- as_hms(parse_date_time(end, orders = "HM", quiet = TRUE))
 
-#also see what happens when an invalid value is entered
-parse_date_time("not_a_time", orders = "HM") #gives warnings
-parse_date_time("not_a_time", orders = "HM", quiet = TRUE) #returns NA without a warning
+#view results
+start
+end
 ```
+
+In order to find the midpoint, we need to format these values into a numeric matrix.
+
+```{r}
+time_example <- matrix(c(as.numeric(start), as.numeric(end)), ncol=2)
+
+#view results
+time_example
+```
+
 Find the midpoint between the starting time and the ending time.
 
 ```{r}
-median(split)
-```
-Lastly, format it to show just a time instead of a date and time (this uses the `hms` package).
+midpoint <- rowMeans(time_example)
 
-```{r}
-as_hms(median(split))
+#view results
+midpoint
 ```
 
-Put it all together into a function:
+Lastly, format the midpoint back into a time format.
 
 ```{r}
-median_time <- function(string){
-  as_hms(median(parse_date_time(
-        word(string, c(1,-1), sep = " to "),
-        orders = "HM",
-        quiet = TRUE)))
+midpoint <- as_hms(midpoint)
+
+#view results
+midpoint
+```
+
+Now formulate this process into a tidy-style function!
+
+```{r}
+time_midpoint <- function(tibble, timecolumn){
+  
+  tibble[[timecolumn]] <- as_hms(rowMeans(matrix(c(
+  
+  as.numeric(as_hms(parse_date_time(
+    word(tibble[[timecolumn]], 1, sep = " to "), 
+    orders ="HM",
+    quiet = TRUE))),
+  
+  as.numeric(as_hms(parse_date_time(
+    word(tibble[[timecolumn]], -1, sep = " to "), 
+    orders ="HM",
+    quiet = TRUE)))),
+  
+  ncol = 2)))
+  
+  return(tibble)
+  
 }
 
 ```
-Test the function:
 
-```{r}
-median_time("6:00 a.m. to 6:04 a.m.")
-median_time("7:01 a.m. to 7:03 a.m.")
-median_time("not_a_time")
-```
 Now test this on our example tibble:
 
 ```{r}
 
 astibble <- astibble |>
   rowwise() |> #rowwise groups by one row at a time
-  mutate(JWAP = median_time(JWAP),
-         JWDP = median_time(JWDP))
+  time_midpoint("JWAP") |>
+  time_midpoint("JWDP")
 
 #view results
 astibble |>
@@ -480,6 +515,9 @@ Add **census** class:
 
 ```{r}
 class(astibble) <- c("census", class(astibble))
+
+#view class:
+class(astibble)
 ```
 
 #### Combining It All Together
@@ -492,7 +530,7 @@ query <- function(year, nvar, cvar, geolevel, geovalue){
   #translate geolevel into numeric geolevel:
   if (geolevel == "STATE"){geolevel_translated <- "040"}
   else if (geolevel == "REGION"){geolevel_translated <- "020"}
-  else if (geolevel == "DIVISION"){geolevel_translated < "030"}
+  else if (geolevel == "DIVISION"){geolevel_translated <- "030"}
   
   #API call:
   raw_api <- GET(paste0("https://api.census.gov/data/",
@@ -521,14 +559,12 @@ query <- function(year, nvar, cvar, geolevel, geovalue){
   if ("JWAP" %in% nvar){
     tibble <- tibble |>
       convert_to_factor(year, "JWAP") |>
-      rowwise() |>
-      mutate(JWAP = median_time(JWAP))
+      time_midpoint("JWAP")
   }
   if ("JWDP" %in% nvar){
     tibble <- tibble |>
       convert_to_factor(year, "JWDP") |>
-      rowwise() |>
-      mutate(JWDP = median_time(JWDP))
+      time_midpoint("JWDP")
   }
   
   #Add census class:
@@ -594,7 +630,38 @@ multiyear_query(c(2021, 2023), c("PWGTP", "JWAP"), c("FER", "HHL"), "DIVISION", 
 
 #### Numeric Summaries
 
+Write a function that produces means and standard deviations for our numeric variable(s) (ignore the time variables) and counts for our categorical variable(s) (year should be treated as categorical).
+
+```{r}
+summary.census <- function(tibble, nvar, cvar){
+
+  #sum(numeric_vector*weight_vector)/sum(weight_vector)
+  
+  #sqrt(sum(numeric_vectorˆ2*weight_vector)/sum(weight_vector)-sample_meanˆ2)
+}
+```
+
+Examples:
+
+```{r}
+
+```
+
 #### Graphical Summaries
+
+Create a generic `plot()` function for a `census` class tibble which creates a boxplot of a numeric variable at the levels of the categorical variable.
+
+```{r}
+plot.census <- function(tibble, nvar, cvar){
+  
+}
+```
+
+Examples:
+
+```{r}
+
+```
 
 ### Investigation
 
