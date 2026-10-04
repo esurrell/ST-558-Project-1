@@ -432,7 +432,6 @@ end
 Now that the starting time and the ending time are separated, convert each of them from character format to a time format.
 
 ```{r}
-
 start <- as_hms(parse_date_time(start, orders ="HM", quiet = TRUE))
 end <- as_hms(parse_date_time(end, orders = "HM", quiet = TRUE))
 
@@ -665,17 +664,37 @@ Write a function that produces means and standard deviations for our numeric var
 
 ```{r}
 summary.census <- function(tibble, nvar, cvar){
-
-  #sum(numeric_vector*weight_vector)/sum(weight_vector)
   
-  #sqrt(sum(numeric_vectorˆ2*weight_vector)/sum(weight_vector)-sample_meanˆ2)
+  #initialize empty lists for the results
+  numeric_results <- list()
+  categorical_results <- list()
+  
+  #summarize numeric variables
+  for (x in nvar){
+    sample_mean <- sum(tibble[[x]]*tibble$PWGTP) / sum(tibble$PWGTP)
+    
+    sample_sd <- sqrt(sum(tibble[[x]]^2*tibble$PWGTP) / sum(tibble$PWGTP)-sample_mean^2)
+    
+    numeric_results[[x]] <- c(sample_mean = sample_mean,
+                         sample_sd = sample_sd)
+  }
+  
+  #summarize categorical variables
+  for (x in cvar){
+    categorical_results[[x]] <- table(tibble[[x]], useNA = "always")
+  }
+  
+  results <- list(numeric = numeric_results,
+                  categorical = categorical_results)
+  
+  return(results)
 }
 ```
 
 Examples:
 
 ```{r}
-
+summary(example6, c("AGEP", "GASP"), c("SEX", "SCH", "year"))
 ```
 
 #### Graphical Summaries
@@ -684,12 +703,29 @@ Create a generic `plot()` function for a `census` class tibble which creates a b
 
 ```{r}
 plot.census <- function(tibble, num_var, cat_var){
-  
-g <- ggplot(tibble)
 
-g + geom_boxplot(aes(x = get(cat_var),
+#initialize the plot
+ggplot(tibble) +
+    
+    #add boxplot layer
+    geom_boxplot(aes(x = get(cat_var),
                      y = get(num_var),
-                     weight = PWGTP))
+                     fill = get(cat_var),
+                     weight = PWGTP)) +
+    
+    #set x and y labels and title
+    labs(title = paste(num_var, cat_var, sep = " by "),
+         x = cat_var,
+         y = num_var) +
+    
+    #set legend label
+    scale_fill_discrete(cat_var) +
+    
+    #set the color theme
+    theme_light() +
+  
+    #center the title
+    theme(plot.title = element_text(hjust = 0.5))
 }
 ```
 
@@ -697,7 +733,7 @@ Examples:
 
 ```{r}
 plot(example6, "AGEP", "SEX")
-plot(example6, "AGEP", "year")
+plot(example6, "GASP", "year")
 ```
 
 ### Investigation
