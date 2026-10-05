@@ -1499,27 +1499,28 @@ $categorical$year
 <h3 class="anchored" data-anchor-id="investigation">Investigation</h3>
 <p>Investigate something interesting from the data using the functions above!</p>
 <p>For this investigation, we will look at the numeric variable GPIP, which represents “Gross rent as a percentage of household income past 12 months”.</p>
-<p>First, query the data.</p>
+<p>First, query the data. We will exclude people who are not renting and therefore have a value of zero in the data.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb121"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb121-1"><a href="#cb121-1" aria-hidden="true" tabindex="-1"></a>rent_data <span class="ot">&lt;-</span> <span class="fu">multiyear_query</span>(<span class="dv">2021</span><span class="sc">:</span><span class="dv">2024</span>, <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"GRPIP"</span>), <span class="fu">c</span>(<span class="st">"SEX"</span>, <span class="st">"SCHL"</span>), <span class="st">"STATE"</span>, <span class="dv">37</span>)</span>
-<span id="cb121-2"><a href="#cb121-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb121-3"><a href="#cb121-3" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
-<span id="cb121-4"><a href="#cb121-4" aria-hidden="true" tabindex="-1"></a>rent_data</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb121"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb121-1"><a href="#cb121-1" aria-hidden="true" tabindex="-1"></a>rent_data <span class="ot">&lt;-</span> <span class="fu">multiyear_query</span>(<span class="dv">2021</span><span class="sc">:</span><span class="dv">2024</span>, <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"GRPIP"</span>), <span class="fu">c</span>(<span class="st">"SEX"</span>, <span class="st">"SCHL"</span>), <span class="st">"STATE"</span>, <span class="dv">37</span>) <span class="sc">|&gt;</span></span>
+<span id="cb121-2"><a href="#cb121-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(GRPIP <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb121-3"><a href="#cb121-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb121-4"><a href="#cb121-4" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
+<span id="cb121-5"><a href="#cb121-5" aria-hidden="true" tabindex="-1"></a>rent_data</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 439,757 × 6
+<pre><code># A tibble: 91,009 × 6
    PWGTP GRPIP SEX    SCHL                                         STATE   year 
    &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt;                                        &lt;fct&gt;   &lt;chr&gt;
- 1    78     0 Male   1 or more years of college credit, no degree North … 2021 
- 2     9     0 Female Regular high school diploma                  North … 2021 
- 3    32     0 Female 1 or more years of college credit, no degree North … 2021 
- 4     6     0 Female 12th grade - no diploma                      North … 2021 
- 5   119     0 Male   1 or more years of college credit, no degree North … 2021 
- 6    65     0 Male   1 or more years of college credit, no degree North … 2021 
- 7    11     0 Male   1 or more years of college credit, no degree North … 2021 
- 8    67     0 Female Regular high school diploma                  North … 2021 
- 9    19     0 Male   1 or more years of college credit, no degree North … 2021 
-10   100     0 Male   1 or more years of college credit, no degree North … 2021 
-# ℹ 439,747 more rows</code></pre>
+ 1   228    16 Female Associate's degree                           North … 2021 
+ 2   405    16 Male   Grade 8                                      North … 2021 
+ 3    84    12 Male   1 or more years of college credit, no degree North … 2021 
+ 4    60    29 Male   GED or alternative credential                North … 2021 
+ 5    43    80 Female Grade 6                                      North … 2021 
+ 6   511    12 Female Master's degree                              North … 2021 
+ 7    85    22 Male   1 or more years of college credit, no degree North … 2021 
+ 8   121    22 Male   1 or more years of college credit, no degree North … 2021 
+ 9   120    22 Male   1 or more years of college credit, no degree North … 2021 
+10   120    22 Male   Regular high school diploma                  North … 2021 
+# ℹ 90,999 more rows</code></pre>
 </div>
 </div>
 <p>Look at a summary of the data.</p>
@@ -1529,47 +1530,47 @@ $categorical$year
 <pre><code>$numeric
 $numeric$GRPIP
 sample_mean   sample_sd 
-    9.84008    21.16603 
+   36.15681    26.35574 
 
 
 $categorical
 $categorical$SEX
 # A tibble: 2 × 2
-  SEX       count
-  &lt;fct&gt;     &lt;dbl&gt;
-1 Male   21081988
-2 Female 22049662
+  SEX      count
+  &lt;fct&gt;    &lt;dbl&gt;
+1 Male   5560114
+2 Female 6178169
 
 $categorical$SCHL
 # A tibble: 25 × 2
    SCHL                                             count
    &lt;fct&gt;                                            &lt;dbl&gt;
- 1 Regular high school diploma                    7561590
- 2 No schooling completed                         1407630
- 3 Grade 1                                         506482
- 4 Kindergarten                                    529092
- 5 Grade 4                                         564748
- 6 Professional degree beyond a bachelor's degree  604210
- 7 1 or more years of college credit, no degree   4817260
- 8 Master's degree                                3049810
- 9 Grade 7                                         643558
-10 Associate's degree                             3272860
+ 1 Regular high school diploma                    2143097
+ 2 No schooling completed                          534313
+ 3 Grade 1                                         168484
+ 4 Kindergarten                                    168987
+ 5 Grade 4                                         173441
+ 6 Professional degree beyond a bachelor's degree   97843
+ 7 1 or more years of college credit, no degree   1431971
+ 8 Master's degree                                 587918
+ 9 Grade 7                                         197467
+10 Associate's degree                              768047
 # ℹ 15 more rows
 
 $categorical$STATE
 # A tibble: 1 × 2
   STATE                count
   &lt;fct&gt;                &lt;dbl&gt;
-1 North Carolina/NC 43131650
+1 North Carolina/NC 11738283
 
 $categorical$year
 # A tibble: 4 × 2
-  year     count
-  &lt;chr&gt;    &lt;dbl&gt;
-1 2021  10551162
-2 2022  10698973
-3 2023  10835491
-4 2024  11046024</code></pre>
+  year    count
+  &lt;chr&gt;   &lt;dbl&gt;
+1 2021  2879728
+2 2022  2879236
+3 2023  2979043
+4 2024  3000276</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb125"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Summarize year specifically:</span></span>
 <span id="cb125-2"><a href="#cb125-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(rent_data, <span class="at">cvar =</span> <span class="st">"year"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1577,18 +1578,18 @@ $categorical$year
 <pre><code>$numeric
 $numeric$GRPIP
 sample_mean   sample_sd 
-    9.84008    21.16603 
+   36.15681    26.35574 
 
 
 $categorical
 $categorical$year
 # A tibble: 4 × 2
-  year     count
-  &lt;chr&gt;    &lt;dbl&gt;
-1 2021  10551162
-2 2022  10698973
-3 2023  10835491
-4 2024  11046024</code></pre>
+  year    count
+  &lt;chr&gt;   &lt;dbl&gt;
+1 2021  2879728
+2 2022  2879236
+3 2023  2979043
+4 2024  3000276</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb127"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb127-1"><a href="#cb127-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Summarize GRPIP and SCHL specifically:</span></span>
 <span id="cb127-2"><a href="#cb127-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(rent_data, <span class="st">"GRPIP"</span>, <span class="st">"SCHL"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1596,7 +1597,7 @@ $categorical$year
 <pre><code>$numeric
 $numeric$GRPIP
 sample_mean   sample_sd 
-    9.84008    21.16603 
+   36.15681    26.35574 
 
 
 $categorical
@@ -1604,16 +1605,16 @@ $categorical$SCHL
 # A tibble: 25 × 2
    SCHL                                             count
    &lt;fct&gt;                                            &lt;dbl&gt;
- 1 Regular high school diploma                    7561590
- 2 No schooling completed                         1407630
- 3 Grade 1                                         506482
- 4 Kindergarten                                    529092
- 5 Grade 4                                         564748
- 6 Professional degree beyond a bachelor's degree  604210
- 7 1 or more years of college credit, no degree   4817260
- 8 Master's degree                                3049810
- 9 Grade 7                                         643558
-10 Associate's degree                             3272860
+ 1 Regular high school diploma                    2143097
+ 2 No schooling completed                          534313
+ 3 Grade 1                                         168484
+ 4 Kindergarten                                    168987
+ 5 Grade 4                                         173441
+ 6 Professional degree beyond a bachelor's degree   97843
+ 7 1 or more years of college credit, no degree   1431971
+ 8 Master's degree                                 587918
+ 9 Grade 7                                         197467
+10 Associate's degree                              768047
 # ℹ 15 more rows</code></pre>
 </div>
 </div>
@@ -1642,6 +1643,9 @@ $categorical$SCHL
 </div>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb131"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb131-1"><a href="#cb131-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rent_data, <span class="st">"GRPIP"</span>, <span class="st">"year"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in rq.fit.br(wx, wy, tau = tau, ...): Solution may be nonunique</code></pre>
+</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">

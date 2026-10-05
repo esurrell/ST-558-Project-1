@@ -849,10 +849,11 @@ Investigate something interesting from the data using the functions above!
 
 For this investigation, we will look at the numeric variable GPIP, which represents "Gross rent as a percentage of household income past 12 months".
 
-First, query the data.
+First, query the data. We will exclude people who are not renting and therefore have a value of zero in the data.
 
 ```{r}
-rent_data <- multiyear_query(2021:2024, c("PWGTP", "GRPIP"), c("SEX", "SCHL"), "STATE", 37)
+rent_data <- multiyear_query(2021:2024, c("PWGTP", "GRPIP"), c("SEX", "SCHL"), "STATE", 37) |>
+  filter(GRPIP > 0)
 
 #view results
 rent_data
