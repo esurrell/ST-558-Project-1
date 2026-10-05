@@ -1038,16 +1038,16 @@ $`2`
 <pre><code># A tibble: 114,270 × 4
    PWGTP  AGEP SEX    STATE            
    &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt;            
- 1    60    23 Male   North Carolina/NC
- 2    49    21 Male   North Carolina/NC
- 3    24    20 Male   North Carolina/NC
- 4    54    79 Female North Carolina/NC
- 5    79    18 Male   North Carolina/NC
- 6    54    19 Female North Carolina/NC
- 7    58    22 Female North Carolina/NC
- 8    17    18 Female North Carolina/NC
- 9    30    22 Male   North Carolina/NC
-10    37    67 Female North Carolina/NC
+ 1    57    69 Male   North Carolina/NC
+ 2    56    64 Female North Carolina/NC
+ 3    66    63 Female North Carolina/NC
+ 4    61    26 Male   North Carolina/NC
+ 5    90    25 Female North Carolina/NC
+ 6    56     5 Female North Carolina/NC
+ 7    82     3 Female North Carolina/NC
+ 8    82     2 Female North Carolina/NC
+ 9    81    60 Male   North Carolina/NC
+10    80    61 Female North Carolina/NC
 # ℹ 114,260 more rows</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>example2 <span class="ot">&lt;-</span> <span class="fu">query</span>(<span class="dv">2023</span>, <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"AGEP"</span>, <span class="st">"GASP"</span>), <span class="fu">c</span>(<span class="st">"SEX"</span>, <span class="st">"FER"</span>), <span class="st">"REGION"</span>, <span class="dv">1</span>)</span>
@@ -1299,14 +1299,16 @@ $`2`
 <span id="cb113-32"><a href="#cb113-32" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb113-33"><a href="#cb113-33" aria-hidden="true" tabindex="-1"></a>  <span class="co">#summarize categorical variables</span></span>
 <span id="cb113-34"><a href="#cb113-34" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (x <span class="cf">in</span> cvar){</span>
-<span id="cb113-35"><a href="#cb113-35" aria-hidden="true" tabindex="-1"></a>    categorical_results[[x]] <span class="ot">&lt;-</span> <span class="fu">table</span>(tibble[[x]], <span class="at">useNA =</span> <span class="st">"always"</span>)</span>
-<span id="cb113-36"><a href="#cb113-36" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb113-37"><a href="#cb113-37" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb113-38"><a href="#cb113-38" aria-hidden="true" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">numeric =</span> numeric_results,</span>
-<span id="cb113-39"><a href="#cb113-39" aria-hidden="true" tabindex="-1"></a>                  <span class="at">categorical =</span> categorical_results)</span>
-<span id="cb113-40"><a href="#cb113-40" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb113-41"><a href="#cb113-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(results)</span>
-<span id="cb113-42"><a href="#cb113-42" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb113-35"><a href="#cb113-35" aria-hidden="true" tabindex="-1"></a>    categorical_results[[x]] <span class="ot">&lt;-</span> tibble[,<span class="fu">c</span>(<span class="st">"PWGTP"</span>, x)] <span class="sc">|&gt;</span></span>
+<span id="cb113-36"><a href="#cb113-36" aria-hidden="true" tabindex="-1"></a>      <span class="fu">group_by</span>(<span class="fu">across</span>(<span class="sc">-</span>PWGTP)) <span class="sc">|&gt;</span></span>
+<span id="cb113-37"><a href="#cb113-37" aria-hidden="true" tabindex="-1"></a>      <span class="fu">summarize</span>(<span class="at">count =</span> <span class="fu">sum</span>(PWGTP))</span>
+<span id="cb113-38"><a href="#cb113-38" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb113-39"><a href="#cb113-39" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb113-40"><a href="#cb113-40" aria-hidden="true" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">numeric =</span> numeric_results,</span>
+<span id="cb113-41"><a href="#cb113-41" aria-hidden="true" tabindex="-1"></a>                  <span class="at">categorical =</span> categorical_results)</span>
+<span id="cb113-42"><a href="#cb113-42" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb113-43"><a href="#cb113-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(results)</span>
+<span id="cb113-44"><a href="#cb113-44" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Examples:</p>
 <div class="cell">
@@ -1324,27 +1326,29 @@ sample_mean   sample_sd
 
 $categorical
 $categorical$SEX
-
-  Male Female   &lt;NA&gt; 
-213464 226293      0 
+# A tibble: 2 × 2
+  SEX       count
+  &lt;fct&gt;     &lt;dbl&gt;
+1 Male   21081988
+2 Female 22049662
 
 $categorical$SCH
-
-                  N/A (less than 3 years old) 
-                                        11400 
-Yes, private school or college or home school 
-                                        19512 
-    No, has not attended in the last 3 months 
-                                       334557 
-         Yes, public school or public college 
-                                        74288 
-                                         &lt;NA&gt; 
-                                            0 
+# A tibble: 4 × 2
+  SCH                                              count
+  &lt;fct&gt;                                            &lt;dbl&gt;
+1 N/A (less than 3 years old)                    1383353
+2 Yes, private school or college or home school  1806273
+3 No, has not attended in the last 3 months     31624289
+4 Yes, public school or public college           8317735
 
 $categorical$year
-
-  2021   2022   2023   2024   &lt;NA&gt; 
-104337 109230 111920 114270      0 </code></pre>
+# A tibble: 4 × 2
+  year     count
+  &lt;chr&gt;    &lt;dbl&gt;
+1 2021  10551162
+2 2022  10698973
+3 2023  10835491
+4 2024  11046024</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb116"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(example8)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -1368,99 +1372,55 @@ sample_mean   sample_sd
 
 $categorical
 $categorical$FER
-
-N/A (less than 15 years/greater than 50 years/ male) 
-                                              347032 
-                                                  No 
-                                               88195 
-                                                 Yes 
-                                                4530 
-                                                &lt;NA&gt; 
-                                                   0 
+# A tibble: 3 × 2
+  FER                                                     count
+  &lt;fct&gt;                                                   &lt;dbl&gt;
+1 N/A (less than 15 years/greater than 50 years/ male) 32944143
+2 No                                                    9669465
+3 Yes                                                    518042
 
 $categorical$HHL
-
-                   N/A (GQ/vacant)                            Spanish 
-                             27589                              34781 
-     Other Indo-European languages                       English Only 
-                             12436                             350838 
-Asian and Pacific Island languages                     Other Language 
-                             10563                               3550 
-                              &lt;NA&gt; 
-                                 0 
+# A tibble: 6 × 2
+  HHL                                   count
+  &lt;fct&gt;                                 &lt;dbl&gt;
+1 N/A (GQ/vacant)                     1109750
+2 Spanish                             4561235
+3 Other Indo-European languages       1314237
+4 English Only                       34593191
+5 Asian and Pacific Island languages  1080054
+6 Other Language                       473183
 
 $categorical$SCH
-
-                  N/A (less than 3 years old) 
-                                        11400 
-Yes, private school or college or home school 
-                                        19512 
-    No, has not attended in the last 3 months 
-                                       334557 
-         Yes, public school or public college 
-                                        74288 
-                                         &lt;NA&gt; 
-                                            0 
+# A tibble: 4 × 2
+  SCH                                              count
+  &lt;fct&gt;                                            &lt;dbl&gt;
+1 N/A (less than 3 years old)                    1383353
+2 Yes, private school or college or home school  1806273
+3 No, has not attended in the last 3 months     31624289
+4 Yes, public school or public college           8317735
 
 $categorical$SCHL
-
-                   Regular high school diploma 
-                                         78775 
-                        No schooling completed 
-                                         12350 
-                                       Grade 1 
-                                          4353 
-                                  Kindergarten 
-                                          4604 
-                                       Grade 4 
-                                          4897 
-Professional degree beyond a bachelor's degree 
-                                          7087 
-  1 or more years of college credit, no degree 
-                                         49477 
-                               Master's degree 
-                                         33550 
-                                       Grade 7 
-                                          5793 
-                            Associate's degree 
-                                         34551 
-                   N/A (less than 3 years old) 
-                                         11400 
-                     Nursery school, preschool 
-                                          5474 
-                             Bachelor's degree 
-                                         75748 
-                                       Grade 5 
-                                          5223 
-                              Doctorate degree 
-                                          5866 
-                                       Grade 3 
-                                          4833 
-                                      Grade 11 
-                                         10229 
-                 GED or alternative credential 
-                                         15151 
-                                       Grade 9 
-                                          9264 
-                       12th grade - no diploma 
-                                          6024 
-                                      Grade 10 
-                                         10155 
-                                       Grade 2 
-                                          4593 
-                                       Grade 8 
-                                          7924 
-            Some college, but less than 1 year 
-                                         26349 
-                                       Grade 6 
-                                          6087 
-                                          &lt;NA&gt; 
-                                             0 
+# A tibble: 25 × 2
+   SCHL                                             count
+   &lt;fct&gt;                                            &lt;dbl&gt;
+ 1 Regular high school diploma                    7561590
+ 2 No schooling completed                         1407630
+ 3 Grade 1                                         506482
+ 4 Kindergarten                                    529092
+ 5 Grade 4                                         564748
+ 6 Professional degree beyond a bachelor's degree  604210
+ 7 1 or more years of college credit, no degree   4817260
+ 8 Master's degree                                3049810
+ 9 Grade 7                                         643558
+10 Associate's degree                             3272860
+# ℹ 15 more rows
 
 $categorical$SEX
-
-  Male Female   &lt;NA&gt; 
-213464 226293      0 </code></pre>
+# A tibble: 2 × 2
+  SEX       count
+  &lt;fct&gt;     &lt;dbl&gt;
+1 Male   21081988
+2 Female 22049662</code></pre>
 </div>
 </div>
 </section>

@@ -780,7 +780,9 @@ summary.census <- function(tibble,
   
   #summarize categorical variables
   for (x in cvar){
-    categorical_results[[x]] <- table(tibble[[x]], useNA = "always")
+    categorical_results[[x]] <- tibble[,c("PWGTP", x)] |>
+      group_by(across(-PWGTP)) |>
+      summarize(count = sum(PWGTP))
   }
   
   results <- list(numeric = numeric_results,
