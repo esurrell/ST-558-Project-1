@@ -979,54 +979,57 @@ $`2`
 <span id="cb87-58"><a href="#cb87-58" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Formulate geolevel and geovalue portion of API call:</span></span>
 <span id="cb87-59"><a href="#cb87-59" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (geovalue <span class="sc">==</span> <span class="st">"all"</span>){</span>
 <span id="cb87-60"><a href="#cb87-60" aria-hidden="true" tabindex="-1"></a>    geo_api <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">","</span>, geolevel)</span>
-<span id="cb87-61"><a href="#cb87-61" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb87-62"><a href="#cb87-62" aria-hidden="true" tabindex="-1"></a>    geo_api <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"&amp;ucgid="</span>, geolevel_translated,</span>
-<span id="cb87-63"><a href="#cb87-63" aria-hidden="true" tabindex="-1"></a>    <span class="st">"0000US"</span>, geovalue)</span>
-<span id="cb87-64"><a href="#cb87-64" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb87-65"><a href="#cb87-65" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb87-66"><a href="#cb87-66" aria-hidden="true" tabindex="-1"></a>  <span class="co">#API call:</span></span>
-<span id="cb87-67"><a href="#cb87-67" aria-hidden="true" tabindex="-1"></a>  raw_api <span class="ot">&lt;-</span> <span class="fu">GET</span>(<span class="fu">paste0</span>(<span class="st">"https://api.census.gov/data/"</span>,</span>
-<span id="cb87-68"><a href="#cb87-68" aria-hidden="true" tabindex="-1"></a>    year,</span>
-<span id="cb87-69"><a href="#cb87-69" aria-hidden="true" tabindex="-1"></a>    <span class="st">"/acs/acs1/pums?get="</span>,</span>
-<span id="cb87-70"><a href="#cb87-70" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(nvar, <span class="at">collapse =</span> <span class="st">","</span>),</span>
-<span id="cb87-71"><a href="#cb87-71" aria-hidden="true" tabindex="-1"></a>    <span class="st">","</span>,</span>
-<span id="cb87-72"><a href="#cb87-72" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(cvar, <span class="at">collapse =</span> <span class="st">","</span>),</span>
-<span id="cb87-73"><a href="#cb87-73" aria-hidden="true" tabindex="-1"></a>    geo_api,</span>
-<span id="cb87-74"><a href="#cb87-74" aria-hidden="true" tabindex="-1"></a>    <span class="st">"&amp;key="</span>,</span>
-<span id="cb87-75"><a href="#cb87-75" aria-hidden="true" tabindex="-1"></a>    key))</span>
-<span id="cb87-76"><a href="#cb87-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb87-77"><a href="#cb87-77" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Parse and convert into a numeric tibble using helper function:</span></span>
-<span id="cb87-78"><a href="#cb87-78" aria-hidden="true" tabindex="-1"></a>  tibble <span class="ot">&lt;-</span> <span class="fu">parse_from_get</span>(raw_api)</span>
-<span id="cb87-79"><a href="#cb87-79" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb87-80"><a href="#cb87-80" aria-hidden="true" tabindex="-1"></a>  <span class="co">#For 2021 and 2022: rename ST variable to STATE:</span></span>
-<span id="cb87-81"><a href="#cb87-81" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2021</span>, <span class="dv">2022</span>) <span class="sc">&amp;</span> geolevel <span class="sc">==</span> <span class="st">"STATE"</span>){</span>
-<span id="cb87-82"><a href="#cb87-82" aria-hidden="true" tabindex="-1"></a>    tibble <span class="ot">&lt;-</span> tibble <span class="sc">|&gt;</span></span>
-<span id="cb87-83"><a href="#cb87-83" aria-hidden="true" tabindex="-1"></a>      <span class="fu">rename</span>(<span class="st">"STATE"</span> <span class="ot">=</span> <span class="st">"ST"</span>)</span>
-<span id="cb87-84"><a href="#cb87-84" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb87-85"><a href="#cb87-85" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb87-86"><a href="#cb87-86" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Convert character variables and geolevel to factors using helper function:</span></span>
-<span id="cb87-87"><a href="#cb87-87" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">c</span>(cvar, geolevel)){</span>
-<span id="cb87-88"><a href="#cb87-88" aria-hidden="true" tabindex="-1"></a>    tibble <span class="ot">&lt;-</span> tibble <span class="sc">|&gt;</span></span>
-<span id="cb87-89"><a href="#cb87-89" aria-hidden="true" tabindex="-1"></a>      <span class="fu">convert_to_factor</span>(year, i)</span>
-<span id="cb87-90"><a href="#cb87-90" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb87-91"><a href="#cb87-91" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb87-92"><a href="#cb87-92" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Convert time variables using helper functions:</span></span>
-<span id="cb87-93"><a href="#cb87-93" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="st">"JWAP"</span> <span class="sc">%in%</span> nvar){</span>
-<span id="cb87-94"><a href="#cb87-94" aria-hidden="true" tabindex="-1"></a>    tibble <span class="ot">&lt;-</span> tibble <span class="sc">|&gt;</span></span>
-<span id="cb87-95"><a href="#cb87-95" aria-hidden="true" tabindex="-1"></a>      <span class="fu">convert_to_factor</span>(year, <span class="st">"JWAP"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb87-96"><a href="#cb87-96" aria-hidden="true" tabindex="-1"></a>      <span class="fu">time_midpoint</span>(<span class="st">"JWAP"</span>)</span>
-<span id="cb87-97"><a href="#cb87-97" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb87-98"><a href="#cb87-98" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="st">"JWDP"</span> <span class="sc">%in%</span> nvar){</span>
-<span id="cb87-99"><a href="#cb87-99" aria-hidden="true" tabindex="-1"></a>    tibble <span class="ot">&lt;-</span> tibble <span class="sc">|&gt;</span></span>
-<span id="cb87-100"><a href="#cb87-100" aria-hidden="true" tabindex="-1"></a>      <span class="fu">convert_to_factor</span>(year, <span class="st">"JWDP"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb87-101"><a href="#cb87-101" aria-hidden="true" tabindex="-1"></a>      <span class="fu">time_midpoint</span>(<span class="st">"JWDP"</span>)</span>
-<span id="cb87-102"><a href="#cb87-102" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb87-103"><a href="#cb87-103" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb87-104"><a href="#cb87-104" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Add census class:</span></span>
-<span id="cb87-105"><a href="#cb87-105" aria-hidden="true" tabindex="-1"></a>  <span class="fu">class</span>(tibble) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"census"</span>, <span class="fu">class</span>(tibble))</span>
+<span id="cb87-61"><a href="#cb87-61" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2021</span>,<span class="dv">2022</span>) <span class="sc">&amp;</span> geolevel <span class="sc">==</span> <span class="st">"STATE"</span>){</span>
+<span id="cb87-62"><a href="#cb87-62" aria-hidden="true" tabindex="-1"></a>      geo_api <span class="ot">&lt;-</span> <span class="st">",ST"</span></span>
+<span id="cb87-63"><a href="#cb87-63" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb87-64"><a href="#cb87-64" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb87-65"><a href="#cb87-65" aria-hidden="true" tabindex="-1"></a>    geo_api <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"&amp;ucgid="</span>, geolevel_translated,</span>
+<span id="cb87-66"><a href="#cb87-66" aria-hidden="true" tabindex="-1"></a>    <span class="st">"0000US"</span>, geovalue)</span>
+<span id="cb87-67"><a href="#cb87-67" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb87-68"><a href="#cb87-68" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb87-69"><a href="#cb87-69" aria-hidden="true" tabindex="-1"></a>  <span class="co">#API call:</span></span>
+<span id="cb87-70"><a href="#cb87-70" aria-hidden="true" tabindex="-1"></a>  raw_api <span class="ot">&lt;-</span> <span class="fu">GET</span>(<span class="fu">paste0</span>(<span class="st">"https://api.census.gov/data/"</span>,</span>
+<span id="cb87-71"><a href="#cb87-71" aria-hidden="true" tabindex="-1"></a>    year,</span>
+<span id="cb87-72"><a href="#cb87-72" aria-hidden="true" tabindex="-1"></a>    <span class="st">"/acs/acs1/pums?get="</span>,</span>
+<span id="cb87-73"><a href="#cb87-73" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(nvar, <span class="at">collapse =</span> <span class="st">","</span>),</span>
+<span id="cb87-74"><a href="#cb87-74" aria-hidden="true" tabindex="-1"></a>    <span class="st">","</span>,</span>
+<span id="cb87-75"><a href="#cb87-75" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(cvar, <span class="at">collapse =</span> <span class="st">","</span>),</span>
+<span id="cb87-76"><a href="#cb87-76" aria-hidden="true" tabindex="-1"></a>    geo_api,</span>
+<span id="cb87-77"><a href="#cb87-77" aria-hidden="true" tabindex="-1"></a>    <span class="st">"&amp;key="</span>,</span>
+<span id="cb87-78"><a href="#cb87-78" aria-hidden="true" tabindex="-1"></a>    key))</span>
+<span id="cb87-79"><a href="#cb87-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb87-80"><a href="#cb87-80" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Parse and convert into a numeric tibble using helper function:</span></span>
+<span id="cb87-81"><a href="#cb87-81" aria-hidden="true" tabindex="-1"></a>  tibble <span class="ot">&lt;-</span> <span class="fu">parse_from_get</span>(raw_api)</span>
+<span id="cb87-82"><a href="#cb87-82" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb87-83"><a href="#cb87-83" aria-hidden="true" tabindex="-1"></a>  <span class="co">#For 2021 and 2022: rename ST variable to STATE:</span></span>
+<span id="cb87-84"><a href="#cb87-84" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2021</span>, <span class="dv">2022</span>) <span class="sc">&amp;</span> geolevel <span class="sc">==</span> <span class="st">"STATE"</span>){</span>
+<span id="cb87-85"><a href="#cb87-85" aria-hidden="true" tabindex="-1"></a>    tibble <span class="ot">&lt;-</span> tibble <span class="sc">|&gt;</span></span>
+<span id="cb87-86"><a href="#cb87-86" aria-hidden="true" tabindex="-1"></a>      <span class="fu">rename</span>(<span class="st">"STATE"</span> <span class="ot">=</span> <span class="st">"ST"</span>)</span>
+<span id="cb87-87"><a href="#cb87-87" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb87-88"><a href="#cb87-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb87-89"><a href="#cb87-89" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Convert character variables and geolevel to factors using helper function:</span></span>
+<span id="cb87-90"><a href="#cb87-90" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">c</span>(cvar, geolevel)){</span>
+<span id="cb87-91"><a href="#cb87-91" aria-hidden="true" tabindex="-1"></a>    tibble <span class="ot">&lt;-</span> tibble <span class="sc">|&gt;</span></span>
+<span id="cb87-92"><a href="#cb87-92" aria-hidden="true" tabindex="-1"></a>      <span class="fu">convert_to_factor</span>(year, i)</span>
+<span id="cb87-93"><a href="#cb87-93" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb87-94"><a href="#cb87-94" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb87-95"><a href="#cb87-95" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Convert time variables using helper functions:</span></span>
+<span id="cb87-96"><a href="#cb87-96" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="st">"JWAP"</span> <span class="sc">%in%</span> nvar){</span>
+<span id="cb87-97"><a href="#cb87-97" aria-hidden="true" tabindex="-1"></a>    tibble <span class="ot">&lt;-</span> tibble <span class="sc">|&gt;</span></span>
+<span id="cb87-98"><a href="#cb87-98" aria-hidden="true" tabindex="-1"></a>      <span class="fu">convert_to_factor</span>(year, <span class="st">"JWAP"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb87-99"><a href="#cb87-99" aria-hidden="true" tabindex="-1"></a>      <span class="fu">time_midpoint</span>(<span class="st">"JWAP"</span>)</span>
+<span id="cb87-100"><a href="#cb87-100" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb87-101"><a href="#cb87-101" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="st">"JWDP"</span> <span class="sc">%in%</span> nvar){</span>
+<span id="cb87-102"><a href="#cb87-102" aria-hidden="true" tabindex="-1"></a>    tibble <span class="ot">&lt;-</span> tibble <span class="sc">|&gt;</span></span>
+<span id="cb87-103"><a href="#cb87-103" aria-hidden="true" tabindex="-1"></a>      <span class="fu">convert_to_factor</span>(year, <span class="st">"JWDP"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb87-104"><a href="#cb87-104" aria-hidden="true" tabindex="-1"></a>      <span class="fu">time_midpoint</span>(<span class="st">"JWDP"</span>)</span>
+<span id="cb87-105"><a href="#cb87-105" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb87-106"><a href="#cb87-106" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb87-107"><a href="#cb87-107" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(tibble)</span>
-<span id="cb87-108"><a href="#cb87-108" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb87-107"><a href="#cb87-107" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Add census class:</span></span>
+<span id="cb87-108"><a href="#cb87-108" aria-hidden="true" tabindex="-1"></a>  <span class="fu">class</span>(tibble) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"census"</span>, <span class="fu">class</span>(tibble))</span>
+<span id="cb87-109"><a href="#cb87-109" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb87-110"><a href="#cb87-110" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(tibble)</span>
+<span id="cb87-111"><a href="#cb87-111" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Examples using the function:</p>
 <div class="cell">
@@ -1038,16 +1041,16 @@ $`2`
 <pre><code># A tibble: 114,270 × 4
    PWGTP  AGEP SEX    STATE            
    &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt;            
- 1    57    69 Male   North Carolina/NC
- 2    56    64 Female North Carolina/NC
- 3    66    63 Female North Carolina/NC
- 4    61    26 Male   North Carolina/NC
- 5    90    25 Female North Carolina/NC
- 6    56     5 Female North Carolina/NC
- 7    82     3 Female North Carolina/NC
- 8    82     2 Female North Carolina/NC
- 9    81    60 Male   North Carolina/NC
-10    80    61 Female North Carolina/NC
+ 1    60    23 Male   North Carolina/NC
+ 2    49    21 Male   North Carolina/NC
+ 3    24    20 Male   North Carolina/NC
+ 4    54    79 Female North Carolina/NC
+ 5    79    18 Male   North Carolina/NC
+ 6    54    19 Female North Carolina/NC
+ 7    58    22 Female North Carolina/NC
+ 8    17    18 Female North Carolina/NC
+ 9    30    22 Male   North Carolina/NC
+10    37    67 Female North Carolina/NC
 # ℹ 114,260 more rows</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>example2 <span class="ot">&lt;-</span> <span class="fu">query</span>(<span class="dv">2023</span>, <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"AGEP"</span>, <span class="st">"GASP"</span>), <span class="fu">c</span>(<span class="st">"SEX"</span>, <span class="st">"FER"</span>), <span class="st">"REGION"</span>, <span class="dv">1</span>)</span>
@@ -1277,38 +1280,37 @@ $`2`
 <span id="cb113-10"><a href="#cb113-10" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb113-11"><a href="#cb113-11" aria-hidden="true" tabindex="-1"></a>   </span>
 <span id="cb113-12"><a href="#cb113-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(cvar)){ </span>
-<span id="cb113-13"><a href="#cb113-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">#default is all character variables</span></span>
+<span id="cb113-13"><a href="#cb113-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">#default is all categorical variables</span></span>
 <span id="cb113-14"><a href="#cb113-14" aria-hidden="true" tabindex="-1"></a>    cvar <span class="ot">&lt;-</span> <span class="fu">attributes</span>(tibble)<span class="sc">$</span>names</span>
-<span id="cb113-15"><a href="#cb113-15" aria-hidden="true" tabindex="-1"></a>    cvar <span class="ot">&lt;-</span> cvar[cvar <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"FER"</span>,<span class="st">"HHL"</span>,<span class="st">"SCH"</span>,<span class="st">"SCHL"</span>,<span class="st">"SEX"</span>)]</span>
+<span id="cb113-15"><a href="#cb113-15" aria-hidden="true" tabindex="-1"></a>    cvar <span class="ot">&lt;-</span> cvar[cvar <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"FER"</span>,<span class="st">"HHL"</span>,<span class="st">"SCH"</span>,<span class="st">"SCHL"</span>,<span class="st">"SEX"</span>,<span class="st">"STATE"</span>,<span class="st">"REGION"</span>,<span class="st">"DIVISION"</span>,<span class="st">"year"</span>)]</span>
 <span id="cb113-16"><a href="#cb113-16" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb113-17"><a href="#cb113-17" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb113-18"><a href="#cb113-18" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb113-19"><a href="#cb113-19" aria-hidden="true" tabindex="-1"></a>  <span class="co">#initialize empty lists for the results</span></span>
-<span id="cb113-20"><a href="#cb113-20" aria-hidden="true" tabindex="-1"></a>  numeric_results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb113-21"><a href="#cb113-21" aria-hidden="true" tabindex="-1"></a>  categorical_results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb113-22"><a href="#cb113-22" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb113-23"><a href="#cb113-23" aria-hidden="true" tabindex="-1"></a>  <span class="co">#summarize numeric variables</span></span>
-<span id="cb113-24"><a href="#cb113-24" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (x <span class="cf">in</span> nvar){</span>
-<span id="cb113-25"><a href="#cb113-25" aria-hidden="true" tabindex="-1"></a>    sample_mean <span class="ot">&lt;-</span> <span class="fu">sum</span>(tibble[[x]]<span class="sc">*</span>tibble<span class="sc">$</span>PWGTP) <span class="sc">/</span> <span class="fu">sum</span>(tibble<span class="sc">$</span>PWGTP)</span>
-<span id="cb113-26"><a href="#cb113-26" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb113-27"><a href="#cb113-27" aria-hidden="true" tabindex="-1"></a>    sample_sd <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(tibble[[x]]<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>tibble<span class="sc">$</span>PWGTP) <span class="sc">/</span> <span class="fu">sum</span>(tibble<span class="sc">$</span>PWGTP)<span class="sc">-</span>sample_mean<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb113-28"><a href="#cb113-28" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb113-29"><a href="#cb113-29" aria-hidden="true" tabindex="-1"></a>    numeric_results[[x]] <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">sample_mean =</span> sample_mean,</span>
-<span id="cb113-30"><a href="#cb113-30" aria-hidden="true" tabindex="-1"></a>                         <span class="at">sample_sd =</span> sample_sd)</span>
-<span id="cb113-31"><a href="#cb113-31" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb113-32"><a href="#cb113-32" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb113-33"><a href="#cb113-33" aria-hidden="true" tabindex="-1"></a>  <span class="co">#summarize categorical variables</span></span>
-<span id="cb113-34"><a href="#cb113-34" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (x <span class="cf">in</span> cvar){</span>
-<span id="cb113-35"><a href="#cb113-35" aria-hidden="true" tabindex="-1"></a>    categorical_results[[x]] <span class="ot">&lt;-</span> tibble[,<span class="fu">c</span>(<span class="st">"PWGTP"</span>, x)] <span class="sc">|&gt;</span></span>
-<span id="cb113-36"><a href="#cb113-36" aria-hidden="true" tabindex="-1"></a>      <span class="fu">group_by</span>(<span class="fu">across</span>(<span class="sc">-</span>PWGTP)) <span class="sc">|&gt;</span></span>
-<span id="cb113-37"><a href="#cb113-37" aria-hidden="true" tabindex="-1"></a>      <span class="fu">summarize</span>(<span class="at">count =</span> <span class="fu">sum</span>(PWGTP))</span>
-<span id="cb113-38"><a href="#cb113-38" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb113-39"><a href="#cb113-39" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb113-40"><a href="#cb113-40" aria-hidden="true" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">numeric =</span> numeric_results,</span>
-<span id="cb113-41"><a href="#cb113-41" aria-hidden="true" tabindex="-1"></a>                  <span class="at">categorical =</span> categorical_results)</span>
-<span id="cb113-42"><a href="#cb113-42" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb113-43"><a href="#cb113-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(results)</span>
-<span id="cb113-44"><a href="#cb113-44" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb113-18"><a href="#cb113-18" aria-hidden="true" tabindex="-1"></a>  <span class="co">#initialize empty lists for the results</span></span>
+<span id="cb113-19"><a href="#cb113-19" aria-hidden="true" tabindex="-1"></a>  numeric_results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb113-20"><a href="#cb113-20" aria-hidden="true" tabindex="-1"></a>  categorical_results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb113-21"><a href="#cb113-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb113-22"><a href="#cb113-22" aria-hidden="true" tabindex="-1"></a>  <span class="co">#summarize numeric variables</span></span>
+<span id="cb113-23"><a href="#cb113-23" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (x <span class="cf">in</span> nvar){</span>
+<span id="cb113-24"><a href="#cb113-24" aria-hidden="true" tabindex="-1"></a>    sample_mean <span class="ot">&lt;-</span> <span class="fu">sum</span>(tibble[[x]]<span class="sc">*</span>tibble<span class="sc">$</span>PWGTP) <span class="sc">/</span> <span class="fu">sum</span>(tibble<span class="sc">$</span>PWGTP)</span>
+<span id="cb113-25"><a href="#cb113-25" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb113-26"><a href="#cb113-26" aria-hidden="true" tabindex="-1"></a>    sample_sd <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(tibble[[x]]<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>tibble<span class="sc">$</span>PWGTP) <span class="sc">/</span> <span class="fu">sum</span>(tibble<span class="sc">$</span>PWGTP)<span class="sc">-</span>sample_mean<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb113-27"><a href="#cb113-27" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb113-28"><a href="#cb113-28" aria-hidden="true" tabindex="-1"></a>    numeric_results[[x]] <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">sample_mean =</span> sample_mean,</span>
+<span id="cb113-29"><a href="#cb113-29" aria-hidden="true" tabindex="-1"></a>                         <span class="at">sample_sd =</span> sample_sd)</span>
+<span id="cb113-30"><a href="#cb113-30" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb113-31"><a href="#cb113-31" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb113-32"><a href="#cb113-32" aria-hidden="true" tabindex="-1"></a>  <span class="co">#summarize categorical variables</span></span>
+<span id="cb113-33"><a href="#cb113-33" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (x <span class="cf">in</span> cvar){</span>
+<span id="cb113-34"><a href="#cb113-34" aria-hidden="true" tabindex="-1"></a>    categorical_results[[x]] <span class="ot">&lt;-</span> tibble[,<span class="fu">c</span>(<span class="st">"PWGTP"</span>, x)] <span class="sc">|&gt;</span></span>
+<span id="cb113-35"><a href="#cb113-35" aria-hidden="true" tabindex="-1"></a>      <span class="fu">group_by</span>(<span class="fu">across</span>(<span class="sc">-</span>PWGTP)) <span class="sc">|&gt;</span></span>
+<span id="cb113-36"><a href="#cb113-36" aria-hidden="true" tabindex="-1"></a>      <span class="fu">summarize</span>(<span class="at">count =</span> <span class="fu">sum</span>(PWGTP))</span>
+<span id="cb113-37"><a href="#cb113-37" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb113-38"><a href="#cb113-38" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb113-39"><a href="#cb113-39" aria-hidden="true" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">numeric =</span> numeric_results,</span>
+<span id="cb113-40"><a href="#cb113-40" aria-hidden="true" tabindex="-1"></a>                  <span class="at">categorical =</span> categorical_results)</span>
+<span id="cb113-41"><a href="#cb113-41" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb113-42"><a href="#cb113-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(results)</span>
+<span id="cb113-43"><a href="#cb113-43" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Examples:</p>
 <div class="cell">
@@ -1420,7 +1422,22 @@ $categorical$SEX
   SEX       count
   &lt;fct&gt;     &lt;dbl&gt;
 1 Male   21081988
-2 Female 22049662</code></pre>
+2 Female 22049662
+
+$categorical$STATE
+# A tibble: 1 × 2
+  STATE                count
+  &lt;fct&gt;                &lt;dbl&gt;
+1 North Carolina/NC 43131650
+
+$categorical$year
+# A tibble: 4 × 2
+  year     count
+  &lt;chr&gt;    &lt;dbl&gt;
+1 2021  10551162
+2 2022  10698973
+3 2023  10835491
+4 2024  11046024</code></pre>
 </div>
 </div>
 </section>
@@ -1451,8 +1468,11 @@ $categorical$SEX
 <span id="cb118-21"><a href="#cb118-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_light</span>() <span class="sc">+</span></span>
 <span id="cb118-22"><a href="#cb118-22" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb118-23"><a href="#cb118-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">#center the title</span></span>
-<span id="cb118-24"><a href="#cb118-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span>
-<span id="cb118-25"><a href="#cb118-25" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb118-24"><a href="#cb118-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb118-25"><a href="#cb118-25" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb118-26"><a href="#cb118-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">#angle the x-axis labels</span></span>
+<span id="cb118-27"><a href="#cb118-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span>
+<span id="cb118-28"><a href="#cb118-28" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Examples:</p>
 <div class="cell">
@@ -1478,6 +1498,158 @@ $categorical$SEX
 <section id="investigation" class="level3">
 <h3 class="anchored" data-anchor-id="investigation">Investigation</h3>
 <p>Investigate something interesting from the data using the functions above!</p>
+<p>For this investigation, we will look at the numeric variable GPIP, which represents “Gross rent as a percentage of household income past 12 months”.</p>
+<p>First, query the data.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb121"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb121-1"><a href="#cb121-1" aria-hidden="true" tabindex="-1"></a>rent_data <span class="ot">&lt;-</span> <span class="fu">multiyear_query</span>(<span class="dv">2021</span><span class="sc">:</span><span class="dv">2024</span>, <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"GRPIP"</span>), <span class="fu">c</span>(<span class="st">"SEX"</span>, <span class="st">"SCHL"</span>), <span class="st">"STATE"</span>, <span class="dv">37</span>)</span>
+<span id="cb121-2"><a href="#cb121-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb121-3"><a href="#cb121-3" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
+<span id="cb121-4"><a href="#cb121-4" aria-hidden="true" tabindex="-1"></a>rent_data</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 439,757 × 6
+   PWGTP GRPIP SEX    SCHL                                         STATE   year 
+   &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt;                                        &lt;fct&gt;   &lt;chr&gt;
+ 1    78     0 Male   1 or more years of college credit, no degree North … 2021 
+ 2     9     0 Female Regular high school diploma                  North … 2021 
+ 3    32     0 Female 1 or more years of college credit, no degree North … 2021 
+ 4     6     0 Female 12th grade - no diploma                      North … 2021 
+ 5   119     0 Male   1 or more years of college credit, no degree North … 2021 
+ 6    65     0 Male   1 or more years of college credit, no degree North … 2021 
+ 7    11     0 Male   1 or more years of college credit, no degree North … 2021 
+ 8    67     0 Female Regular high school diploma                  North … 2021 
+ 9    19     0 Male   1 or more years of college credit, no degree North … 2021 
+10   100     0 Male   1 or more years of college credit, no degree North … 2021 
+# ℹ 439,747 more rows</code></pre>
+</div>
+</div>
+<p>Look at a summary of the data.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb123"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb123-1"><a href="#cb123-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(rent_data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$numeric
+$numeric$GRPIP
+sample_mean   sample_sd 
+    9.84008    21.16603 
+
+
+$categorical
+$categorical$SEX
+# A tibble: 2 × 2
+  SEX       count
+  &lt;fct&gt;     &lt;dbl&gt;
+1 Male   21081988
+2 Female 22049662
+
+$categorical$SCHL
+# A tibble: 25 × 2
+   SCHL                                             count
+   &lt;fct&gt;                                            &lt;dbl&gt;
+ 1 Regular high school diploma                    7561590
+ 2 No schooling completed                         1407630
+ 3 Grade 1                                         506482
+ 4 Kindergarten                                    529092
+ 5 Grade 4                                         564748
+ 6 Professional degree beyond a bachelor's degree  604210
+ 7 1 or more years of college credit, no degree   4817260
+ 8 Master's degree                                3049810
+ 9 Grade 7                                         643558
+10 Associate's degree                             3272860
+# ℹ 15 more rows
+
+$categorical$STATE
+# A tibble: 1 × 2
+  STATE                count
+  &lt;fct&gt;                &lt;dbl&gt;
+1 North Carolina/NC 43131650
+
+$categorical$year
+# A tibble: 4 × 2
+  year     count
+  &lt;chr&gt;    &lt;dbl&gt;
+1 2021  10551162
+2 2022  10698973
+3 2023  10835491
+4 2024  11046024</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb125"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Summarize year specifically:</span></span>
+<span id="cb125-2"><a href="#cb125-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(rent_data, <span class="at">cvar =</span> <span class="st">"year"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$numeric
+$numeric$GRPIP
+sample_mean   sample_sd 
+    9.84008    21.16603 
+
+
+$categorical
+$categorical$year
+# A tibble: 4 × 2
+  year     count
+  &lt;chr&gt;    &lt;dbl&gt;
+1 2021  10551162
+2 2022  10698973
+3 2023  10835491
+4 2024  11046024</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb127"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb127-1"><a href="#cb127-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Summarize GRPIP and SCHL specifically:</span></span>
+<span id="cb127-2"><a href="#cb127-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(rent_data, <span class="st">"GRPIP"</span>, <span class="st">"SCHL"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$numeric
+$numeric$GRPIP
+sample_mean   sample_sd 
+    9.84008    21.16603 
+
+
+$categorical
+$categorical$SCHL
+# A tibble: 25 × 2
+   SCHL                                             count
+   &lt;fct&gt;                                            &lt;dbl&gt;
+ 1 Regular high school diploma                    7561590
+ 2 No schooling completed                         1407630
+ 3 Grade 1                                         506482
+ 4 Kindergarten                                    529092
+ 5 Grade 4                                         564748
+ 6 Professional degree beyond a bachelor's degree  604210
+ 7 1 or more years of college credit, no degree   4817260
+ 8 Master's degree                                3049810
+ 9 Grade 7                                         643558
+10 Associate's degree                             3272860
+# ℹ 15 more rows</code></pre>
+</div>
+</div>
+<p>See how the rent-to-income ratio is the same or different across sex, educational attainment, and year.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb129"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb129-1"><a href="#cb129-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rent_data, <span class="st">"GRPIP"</span>, <span class="st">"SEX"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Project1_files/figure-html/unnamed-chunk-44-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb130"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb130-1"><a href="#cb130-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rent_data <span class="sc">|&gt;</span></span>
+<span id="cb130-2"><a href="#cb130-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">filter</span>(SCHL <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Regular high school diploma"</span>,</span>
+<span id="cb130-3"><a href="#cb130-3" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"Associate's degree"</span>,</span>
+<span id="cb130-4"><a href="#cb130-4" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"Bachelor's degree"</span>,</span>
+<span id="cb130-5"><a href="#cb130-5" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"Master's degree"</span>,</span>
+<span id="cb130-6"><a href="#cb130-6" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"Doctorate degree"</span>)), </span>
+<span id="cb130-7"><a href="#cb130-7" aria-hidden="true" tabindex="-1"></a>     <span class="st">"GRPIP"</span>, <span class="st">"SCHL"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Project1_files/figure-html/unnamed-chunk-44-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb131"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb131-1"><a href="#cb131-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rent_data, <span class="st">"GRPIP"</span>, <span class="st">"year"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Project1_files/figure-html/unnamed-chunk-44-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 
 
 </section>

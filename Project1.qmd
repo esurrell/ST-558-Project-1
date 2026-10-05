@@ -592,6 +592,9 @@ query <- function(year = 2024,
   #Formulate geolevel and geovalue portion of API call:
   if (geovalue == "all"){
     geo_api <- paste0(",", geolevel)
+    if (year %in% c(2021,2022) & geolevel == "STATE"){
+      geo_api <- ",ST"
+    }
   } else {
     geo_api <- paste0("&ucgid=", geolevel_translated,
     "0000US", geovalue)
@@ -758,11 +761,10 @@ summary.census <- function(tibble,
   }
    
   if (is.null(cvar)){ 
-    #default is all character variables
+    #default is all categorical variables
     cvar <- attributes(tibble)$names
-    cvar <- cvar[cvar %in% c("FER","HHL","SCH","SCHL","SEX")]
+    cvar <- cvar[cvar %in% c("FER","HHL","SCH","SCHL","SEX","STATE","REGION","DIVISION","year")]
   }
-  
   
   #initialize empty lists for the results
   numeric_results <- list()
@@ -827,7 +829,10 @@ ggplot(tibble) +
     theme_light() +
   
     #center the title
-    theme(plot.title = element_text(hjust = 0.5))
+    theme(plot.title = element_text(hjust = 0.5)) +
+    
+    #angle the x-axis labels
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
 }
 ```
 
@@ -841,3 +846,41 @@ plot(example8, "GASP", "year")
 ### Investigation
 
 Investigate something interesting from the data using the functions above!
+
+For this investigation, we will look at the numeric variable GPIP, which represents "Gross rent as a percentage of household income past 12 months".
+
+First, query the data.
+
+```{r}
+rent_data <- multiyear_query(2021:2024, c("PWGTP", "GRPIP"), c("SEX", "SCHL"), "STATE", 37)
+
+#view results
+rent_data
+```
+
+Look at a summary of the data.
+
+```{r}
+summary(rent_data)
+
+#Summarize year specifically:
+summary(rent_data, cvar = "year")
+
+#Summarize GRPIP and SCHL specifically:
+summary(rent_data, "GRPIP", "SCHL")
+```
+
+See how the rent-to-income ratio is the same or different across sex, educational attainment, and year.
+
+```{r}
+plot(rent_data, "GRPIP", "SEX")
+plot(rent_data |>
+       filter(SCHL %in% c("Regular high school diploma",
+                          "Associate's degree",
+                          "Bachelor's degree",
+                          "Master's degree",
+                          "Doctorate degree")), 
+     "GRPIP", "SCHL")
+plot(rent_data, "GRPIP", "year")
+```
+
