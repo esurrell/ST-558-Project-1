@@ -843,36 +843,43 @@ $`2`
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>time_midpoint <span class="ot">&lt;-</span> <span class="cf">function</span>(tibble, timecolumn){</span>
 <span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a>  tibble[[timecolumn]] <span class="ot">&lt;-</span> <span class="fu">as_hms</span>(<span class="fu">rowMeans</span>(<span class="fu">matrix</span>(<span class="fu">c</span>(</span>
-<span id="cb80-4"><a href="#cb80-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb80-5"><a href="#cb80-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.numeric</span>(<span class="fu">as_hms</span>(<span class="fu">parse_date_time</span>(</span>
-<span id="cb80-6"><a href="#cb80-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">word</span>(tibble[[timecolumn]], <span class="dv">1</span>, <span class="at">sep =</span> <span class="st">" to "</span>), </span>
-<span id="cb80-7"><a href="#cb80-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">orders =</span><span class="st">"HM"</span>,</span>
-<span id="cb80-8"><a href="#cb80-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">quiet =</span> <span class="cn">TRUE</span>))),</span>
+<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#validate inputs</span></span>
+<span id="cb80-4"><a href="#cb80-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span>(<span class="fu">is_tibble</span>(tibble))) {</span>
+<span id="cb80-5"><a href="#cb80-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"First argument is not a tibble."</span>)</span>
+<span id="cb80-6"><a href="#cb80-6" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (<span class="sc">!</span>(timecolumn <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"JWAP"</span>, <span class="st">"JWDP"</span>))){</span>
+<span id="cb80-7"><a href="#cb80-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">'Invalid timecolumn: Please enter "JWAP" or "JWDP"'</span>)</span>
+<span id="cb80-8"><a href="#cb80-8" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb80-9"><a href="#cb80-9" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb80-10"><a href="#cb80-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.numeric</span>(<span class="fu">as_hms</span>(<span class="fu">parse_date_time</span>(</span>
-<span id="cb80-11"><a href="#cb80-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">word</span>(tibble[[timecolumn]], <span class="sc">-</span><span class="dv">1</span>, <span class="at">sep =</span> <span class="st">" to "</span>), </span>
-<span id="cb80-12"><a href="#cb80-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">orders =</span><span class="st">"HM"</span>,</span>
-<span id="cb80-13"><a href="#cb80-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">quiet =</span> <span class="cn">TRUE</span>)))),</span>
-<span id="cb80-14"><a href="#cb80-14" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb80-15"><a href="#cb80-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">ncol =</span> <span class="dv">2</span>)))</span>
-<span id="cb80-16"><a href="#cb80-16" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb80-17"><a href="#cb80-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(tibble)</span>
-<span id="cb80-18"><a href="#cb80-18" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb80-10"><a href="#cb80-10" aria-hidden="true" tabindex="-1"></a>  <span class="co">#clean timecolumn</span></span>
+<span id="cb80-11"><a href="#cb80-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb80-12"><a href="#cb80-12" aria-hidden="true" tabindex="-1"></a>  tibble[[timecolumn]] <span class="ot">&lt;-</span> <span class="fu">as_hms</span>(<span class="fu">rowMeans</span>(<span class="fu">matrix</span>(<span class="fu">c</span>(</span>
+<span id="cb80-13"><a href="#cb80-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb80-14"><a href="#cb80-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.numeric</span>(<span class="fu">as_hms</span>(<span class="fu">parse_date_time</span>(</span>
+<span id="cb80-15"><a href="#cb80-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">word</span>(tibble[[timecolumn]], <span class="dv">1</span>, <span class="at">sep =</span> <span class="st">" to "</span>), </span>
+<span id="cb80-16"><a href="#cb80-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">orders =</span><span class="st">"HM"</span>,</span>
+<span id="cb80-17"><a href="#cb80-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">quiet =</span> <span class="cn">TRUE</span>))),</span>
+<span id="cb80-18"><a href="#cb80-18" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb80-19"><a href="#cb80-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.numeric</span>(<span class="fu">as_hms</span>(<span class="fu">parse_date_time</span>(</span>
+<span id="cb80-20"><a href="#cb80-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">word</span>(tibble[[timecolumn]], <span class="sc">-</span><span class="dv">1</span>, <span class="at">sep =</span> <span class="st">" to "</span>), </span>
+<span id="cb80-21"><a href="#cb80-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">orders =</span><span class="st">"HM"</span>,</span>
+<span id="cb80-22"><a href="#cb80-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">quiet =</span> <span class="cn">TRUE</span>)))),</span>
+<span id="cb80-23"><a href="#cb80-23" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb80-24"><a href="#cb80-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">ncol =</span> <span class="dv">2</span>)))</span>
+<span id="cb80-25"><a href="#cb80-25" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb80-26"><a href="#cb80-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(tibble)</span>
+<span id="cb80-27"><a href="#cb80-27" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Now test this on our example tibble:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>astibble <span class="ot">&lt;-</span> astibble <span class="sc">|&gt;</span></span>
-<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">|&gt;</span> <span class="co">#rowwise groups by one row at a time</span></span>
-<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">time_midpoint</span>(<span class="st">"JWAP"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">time_midpoint</span>(<span class="st">"JWDP"</span>)</span>
-<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
-<span id="cb81-7"><a href="#cb81-7" aria-hidden="true" tabindex="-1"></a>astibble <span class="sc">|&gt;</span></span>
-<span id="cb81-8"><a href="#cb81-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(JWAP, JWDP)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">time_midpoint</span>(<span class="st">"JWAP"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">time_midpoint</span>(<span class="st">"JWDP"</span>)</span>
+<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
+<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a>astibble <span class="sc">|&gt;</span></span>
+<span id="cb81-7"><a href="#cb81-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(JWAP, JWDP)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 114,270 × 2
-# Rowwise: 
    JWAP   JWDP  
    &lt;time&gt; &lt;time&gt;
  1 07:32  07:32 
@@ -888,14 +895,23 @@ $`2`
 # ℹ 114,260 more rows</code></pre>
 </div>
 </div>
+<p>Test to show input validation:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>astibble <span class="sc">|&gt;</span></span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">time_midpoint</span>(<span class="st">"AGEP"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in `time_midpoint()`:
+! Invalid timecolumn: Please enter "JWAP" or "JWDP"</code></pre>
+</div>
+</div>
 <p>Add <strong>census</strong> class:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(astibble) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"census"</span>, <span class="fu">class</span>(astibble))</span>
-<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a><span class="co">#view class:</span></span>
-<span id="cb83-4"><a href="#cb83-4" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(astibble)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(astibble) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"census"</span>, <span class="fu">class</span>(astibble))</span>
+<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a><span class="co">#view class:</span></span>
+<span id="cb85-4"><a href="#cb85-4" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(astibble)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "census"     "rowwise_df" "tbl_df"     "tbl"        "data.frame"</code></pre>
+<pre><code>[1] "census"     "tbl_df"     "tbl"        "data.frame"</code></pre>
 </div>
 </div>
 </section>
@@ -903,72 +919,121 @@ $`2`
 <h4 class="anchored" data-anchor-id="combining-it-all-together">Combining It All Together</h4>
 <p>Now that we have gone through a full example of cleaning a single API call, we can use the helper functions we created to create an overall function which queries the API for a single year and then does all the data cleaning.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>query <span class="ot">&lt;-</span> <span class="cf">function</span>(year, nvar, cvar, geolevel, geovalue){</span>
-<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#translate geolevel into numeric geolevel:</span></span>
-<span id="cb85-4"><a href="#cb85-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (geolevel <span class="sc">==</span> <span class="st">"STATE"</span>){</span>
-<span id="cb85-5"><a href="#cb85-5" aria-hidden="true" tabindex="-1"></a>    geolevel_translated <span class="ot">&lt;-</span> <span class="st">"040"</span></span>
-<span id="cb85-6"><a href="#cb85-6" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (geolevel <span class="sc">==</span> <span class="st">"REGION"</span>){</span>
-<span id="cb85-7"><a href="#cb85-7" aria-hidden="true" tabindex="-1"></a>    geolevel_translated <span class="ot">&lt;-</span> <span class="st">"020"</span></span>
-<span id="cb85-8"><a href="#cb85-8" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (geolevel <span class="sc">==</span> <span class="st">"DIVISION"</span>){</span>
-<span id="cb85-9"><a href="#cb85-9" aria-hidden="true" tabindex="-1"></a>    geolevel_translated <span class="ot">&lt;-</span> <span class="st">"030"</span></span>
-<span id="cb85-10"><a href="#cb85-10" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb85-11"><a href="#cb85-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">'Please enter "STATE", "REGION", or "DIVISION" for geolevel.'</span>)</span>
-<span id="cb85-12"><a href="#cb85-12" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb85-13"><a href="#cb85-13" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb85-14"><a href="#cb85-14" aria-hidden="true" tabindex="-1"></a>  <span class="co">#API call:</span></span>
-<span id="cb85-15"><a href="#cb85-15" aria-hidden="true" tabindex="-1"></a>  raw_api <span class="ot">&lt;-</span> <span class="fu">GET</span>(<span class="fu">paste0</span>(<span class="st">"https://api.census.gov/data/"</span>,</span>
-<span id="cb85-16"><a href="#cb85-16" aria-hidden="true" tabindex="-1"></a>    year,</span>
-<span id="cb85-17"><a href="#cb85-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"/acs/acs1/pums?get="</span>,</span>
-<span id="cb85-18"><a href="#cb85-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(nvar, <span class="at">collapse =</span> <span class="st">","</span>),</span>
-<span id="cb85-19"><a href="#cb85-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">","</span>,</span>
-<span id="cb85-20"><a href="#cb85-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(cvar, <span class="at">collapse =</span> <span class="st">","</span>),</span>
-<span id="cb85-21"><a href="#cb85-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">"&amp;ucgid="</span>,</span>
-<span id="cb85-22"><a href="#cb85-22" aria-hidden="true" tabindex="-1"></a>    geolevel_translated,</span>
-<span id="cb85-23"><a href="#cb85-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">"0000US"</span>,</span>
-<span id="cb85-24"><a href="#cb85-24" aria-hidden="true" tabindex="-1"></a>    geovalue,</span>
-<span id="cb85-25"><a href="#cb85-25" aria-hidden="true" tabindex="-1"></a>    <span class="st">"&amp;key="</span>,</span>
-<span id="cb85-26"><a href="#cb85-26" aria-hidden="true" tabindex="-1"></a>    key))</span>
-<span id="cb85-27"><a href="#cb85-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb85-28"><a href="#cb85-28" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Parse and convert into a numeric tibble using helper function:</span></span>
-<span id="cb85-29"><a href="#cb85-29" aria-hidden="true" tabindex="-1"></a>  tibble <span class="ot">&lt;-</span> <span class="fu">parse_from_get</span>(raw_api)</span>
-<span id="cb85-30"><a href="#cb85-30" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb85-31"><a href="#cb85-31" aria-hidden="true" tabindex="-1"></a>  <span class="co">#For 2021 and 2022: rename ST variable to STATE:</span></span>
-<span id="cb85-32"><a href="#cb85-32" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2021</span>, <span class="dv">2022</span>) <span class="sc">&amp;</span> geolevel <span class="sc">==</span> <span class="st">"STATE"</span>){</span>
-<span id="cb85-33"><a href="#cb85-33" aria-hidden="true" tabindex="-1"></a>    tibble <span class="ot">&lt;-</span> tibble <span class="sc">|&gt;</span></span>
-<span id="cb85-34"><a href="#cb85-34" aria-hidden="true" tabindex="-1"></a>      <span class="fu">rename</span>(<span class="st">"STATE"</span> <span class="ot">=</span> <span class="st">"ST"</span>)</span>
-<span id="cb85-35"><a href="#cb85-35" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb85-36"><a href="#cb85-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb85-37"><a href="#cb85-37" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Convert character variables and geolevel to factors using helper function:</span></span>
-<span id="cb85-38"><a href="#cb85-38" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">c</span>(cvar, geolevel)){</span>
-<span id="cb85-39"><a href="#cb85-39" aria-hidden="true" tabindex="-1"></a>    tibble <span class="ot">&lt;-</span> tibble <span class="sc">|&gt;</span></span>
-<span id="cb85-40"><a href="#cb85-40" aria-hidden="true" tabindex="-1"></a>      <span class="fu">convert_to_factor</span>(year, i)</span>
-<span id="cb85-41"><a href="#cb85-41" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb85-42"><a href="#cb85-42" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb85-43"><a href="#cb85-43" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Convert time variables using helper functions:</span></span>
-<span id="cb85-44"><a href="#cb85-44" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="st">"JWAP"</span> <span class="sc">%in%</span> nvar){</span>
-<span id="cb85-45"><a href="#cb85-45" aria-hidden="true" tabindex="-1"></a>    tibble <span class="ot">&lt;-</span> tibble <span class="sc">|&gt;</span></span>
-<span id="cb85-46"><a href="#cb85-46" aria-hidden="true" tabindex="-1"></a>      <span class="fu">convert_to_factor</span>(year, <span class="st">"JWAP"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb85-47"><a href="#cb85-47" aria-hidden="true" tabindex="-1"></a>      <span class="fu">time_midpoint</span>(<span class="st">"JWAP"</span>)</span>
-<span id="cb85-48"><a href="#cb85-48" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb85-49"><a href="#cb85-49" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="st">"JWDP"</span> <span class="sc">%in%</span> nvar){</span>
-<span id="cb85-50"><a href="#cb85-50" aria-hidden="true" tabindex="-1"></a>    tibble <span class="ot">&lt;-</span> tibble <span class="sc">|&gt;</span></span>
-<span id="cb85-51"><a href="#cb85-51" aria-hidden="true" tabindex="-1"></a>      <span class="fu">convert_to_factor</span>(year, <span class="st">"JWDP"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb85-52"><a href="#cb85-52" aria-hidden="true" tabindex="-1"></a>      <span class="fu">time_midpoint</span>(<span class="st">"JWDP"</span>)</span>
-<span id="cb85-53"><a href="#cb85-53" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb85-54"><a href="#cb85-54" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb85-55"><a href="#cb85-55" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Add census class:</span></span>
-<span id="cb85-56"><a href="#cb85-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">class</span>(tibble) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"census"</span>, <span class="fu">class</span>(tibble))</span>
-<span id="cb85-57"><a href="#cb85-57" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb85-58"><a href="#cb85-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(tibble)</span>
-<span id="cb85-59"><a href="#cb85-59" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>query <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">year =</span> <span class="dv">2024</span>,</span>
+<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">nvar =</span> <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"AGEP"</span>),</span>
+<span id="cb87-3"><a href="#cb87-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">cvar =</span> <span class="st">"SEX"</span>,</span>
+<span id="cb87-4"><a href="#cb87-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">geolevel =</span> <span class="st">"STATE"</span>,</span>
+<span id="cb87-5"><a href="#cb87-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">geovalue =</span> <span class="cn">NULL</span>){</span>
+<span id="cb87-6"><a href="#cb87-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb87-7"><a href="#cb87-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Validate geolevel input and translate into numeric geolevel:</span></span>
+<span id="cb87-8"><a href="#cb87-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (geolevel <span class="sc">==</span> <span class="st">"STATE"</span>){</span>
+<span id="cb87-9"><a href="#cb87-9" aria-hidden="true" tabindex="-1"></a>    geolevel_translated <span class="ot">&lt;-</span> <span class="st">"040"</span></span>
+<span id="cb87-10"><a href="#cb87-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb87-11"><a href="#cb87-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">#set default geovalue for state</span></span>
+<span id="cb87-12"><a href="#cb87-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">is.null</span>(geovalue)){</span>
+<span id="cb87-13"><a href="#cb87-13" aria-hidden="true" tabindex="-1"></a>      geovalue <span class="ot">&lt;-</span> <span class="dv">37</span> <span class="co">#North Carolina</span></span>
+<span id="cb87-14"><a href="#cb87-14" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb87-15"><a href="#cb87-15" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (geolevel <span class="sc">==</span> <span class="st">"REGION"</span>){</span>
+<span id="cb87-16"><a href="#cb87-16" aria-hidden="true" tabindex="-1"></a>    geolevel_translated <span class="ot">&lt;-</span> <span class="st">"020"</span></span>
+<span id="cb87-17"><a href="#cb87-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb87-18"><a href="#cb87-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">#set default geovalue for region</span></span>
+<span id="cb87-19"><a href="#cb87-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">is.null</span>(geovalue)){</span>
+<span id="cb87-20"><a href="#cb87-20" aria-hidden="true" tabindex="-1"></a>      geovalue <span class="ot">&lt;-</span> <span class="dv">3</span> <span class="co">#South</span></span>
+<span id="cb87-21"><a href="#cb87-21" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb87-22"><a href="#cb87-22" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (geolevel <span class="sc">==</span> <span class="st">"DIVISION"</span>){</span>
+<span id="cb87-23"><a href="#cb87-23" aria-hidden="true" tabindex="-1"></a>    geolevel_translated <span class="ot">&lt;-</span> <span class="st">"030"</span></span>
+<span id="cb87-24"><a href="#cb87-24" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb87-25"><a href="#cb87-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">#set default geovalue for division</span></span>
+<span id="cb87-26"><a href="#cb87-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">is.null</span>(geovalue)){</span>
+<span id="cb87-27"><a href="#cb87-27" aria-hidden="true" tabindex="-1"></a>      geovalue <span class="ot">&lt;-</span> <span class="dv">5</span> <span class="co">#South Atlantic</span></span>
+<span id="cb87-28"><a href="#cb87-28" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb87-29"><a href="#cb87-29" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb87-30"><a href="#cb87-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">'Please enter "STATE", "REGION", or "DIVISION" for geolevel.'</span>)</span>
+<span id="cb87-31"><a href="#cb87-31" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb87-32"><a href="#cb87-32" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb87-33"><a href="#cb87-33" aria-hidden="true" tabindex="-1"></a>  <span class="co">#More input validation:</span></span>
+<span id="cb87-34"><a href="#cb87-34" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2021</span>, <span class="dv">2022</span>, <span class="dv">2023</span>, <span class="dv">2024</span>))){</span>
+<span id="cb87-35"><a href="#cb87-35" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"Invalid year: please enter 2021, 2022, 2023, or 2024"</span>)</span>
+<span id="cb87-36"><a href="#cb87-36" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (<span class="sc">!</span>(<span class="st">"PWGTP"</span> <span class="sc">%in%</span> nvar)){</span>
+<span id="cb87-37"><a href="#cb87-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">'Please include "PWGTP" in list of numeric variables.'</span>)</span>
+<span id="cb87-38"><a href="#cb87-38" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (<span class="fu">length</span>(nvar) <span class="sc">&lt;</span> <span class="dv">2</span>){</span>
+<span id="cb87-39"><a href="#cb87-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">'Please include at least one other numeric varible besides "PWGTP".'</span>)</span>
+<span id="cb87-40"><a href="#cb87-40" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (<span class="fu">length</span>(cvar) <span class="sc">&lt;</span> <span class="dv">1</span>){</span>
+<span id="cb87-41"><a href="#cb87-41" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"Please include at least one categorical variable."</span>)</span>
+<span id="cb87-42"><a href="#cb87-42" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb87-43"><a href="#cb87-43" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb87-44"><a href="#cb87-44" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Validate numeric variables:</span></span>
+<span id="cb87-45"><a href="#cb87-45" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> nvar){</span>
+<span id="cb87-46"><a href="#cb87-46" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span>(i <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"PWGTP"</span>,<span class="st">"AGEP"</span>,<span class="st">"GASP"</span>,<span class="st">"GRPIP"</span>,<span class="st">"JWAP"</span>,<span class="st">"JWDP"</span>,<span class="st">"JWMNP"</span>))){</span>
+<span id="cb87-47"><a href="#cb87-47" aria-hidden="true" tabindex="-1"></a>      <span class="fu">stop</span>(<span class="st">'Invalid numeric variable. Please enter "PWGTP", "AGEP", "GASP", "GRPIP", "JWAP", "JWDP", or "JWMNP".'</span>)</span>
+<span id="cb87-48"><a href="#cb87-48" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb87-49"><a href="#cb87-49" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb87-50"><a href="#cb87-50" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb87-51"><a href="#cb87-51" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Validate character variables:</span></span>
+<span id="cb87-52"><a href="#cb87-52" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> cvar){</span>
+<span id="cb87-53"><a href="#cb87-53" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span>(i <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"FER"</span>,<span class="st">"HHL"</span>,<span class="st">"SCH"</span>,<span class="st">"SCHL"</span>,<span class="st">"SEX"</span>))){</span>
+<span id="cb87-54"><a href="#cb87-54" aria-hidden="true" tabindex="-1"></a>      <span class="fu">stop</span>(<span class="st">'Invalid categorical varibale. Please enter "FER", "HHL", "SCH", "SCHL", or "SEX".'</span>)</span>
+<span id="cb87-55"><a href="#cb87-55" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb87-56"><a href="#cb87-56" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb87-57"><a href="#cb87-57" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb87-58"><a href="#cb87-58" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Formulate geolevel and geovalue portion of API call:</span></span>
+<span id="cb87-59"><a href="#cb87-59" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (geovalue <span class="sc">==</span> <span class="st">"all"</span>){</span>
+<span id="cb87-60"><a href="#cb87-60" aria-hidden="true" tabindex="-1"></a>    geo_api <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">","</span>, geolevel)</span>
+<span id="cb87-61"><a href="#cb87-61" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb87-62"><a href="#cb87-62" aria-hidden="true" tabindex="-1"></a>    geo_api <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"&amp;ucgid="</span>, geolevel_translated,</span>
+<span id="cb87-63"><a href="#cb87-63" aria-hidden="true" tabindex="-1"></a>    <span class="st">"0000US"</span>, geovalue)</span>
+<span id="cb87-64"><a href="#cb87-64" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb87-65"><a href="#cb87-65" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb87-66"><a href="#cb87-66" aria-hidden="true" tabindex="-1"></a>  <span class="co">#API call:</span></span>
+<span id="cb87-67"><a href="#cb87-67" aria-hidden="true" tabindex="-1"></a>  raw_api <span class="ot">&lt;-</span> <span class="fu">GET</span>(<span class="fu">paste0</span>(<span class="st">"https://api.census.gov/data/"</span>,</span>
+<span id="cb87-68"><a href="#cb87-68" aria-hidden="true" tabindex="-1"></a>    year,</span>
+<span id="cb87-69"><a href="#cb87-69" aria-hidden="true" tabindex="-1"></a>    <span class="st">"/acs/acs1/pums?get="</span>,</span>
+<span id="cb87-70"><a href="#cb87-70" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(nvar, <span class="at">collapse =</span> <span class="st">","</span>),</span>
+<span id="cb87-71"><a href="#cb87-71" aria-hidden="true" tabindex="-1"></a>    <span class="st">","</span>,</span>
+<span id="cb87-72"><a href="#cb87-72" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(cvar, <span class="at">collapse =</span> <span class="st">","</span>),</span>
+<span id="cb87-73"><a href="#cb87-73" aria-hidden="true" tabindex="-1"></a>    geo_api,</span>
+<span id="cb87-74"><a href="#cb87-74" aria-hidden="true" tabindex="-1"></a>    <span class="st">"&amp;key="</span>,</span>
+<span id="cb87-75"><a href="#cb87-75" aria-hidden="true" tabindex="-1"></a>    key))</span>
+<span id="cb87-76"><a href="#cb87-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb87-77"><a href="#cb87-77" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Parse and convert into a numeric tibble using helper function:</span></span>
+<span id="cb87-78"><a href="#cb87-78" aria-hidden="true" tabindex="-1"></a>  tibble <span class="ot">&lt;-</span> <span class="fu">parse_from_get</span>(raw_api)</span>
+<span id="cb87-79"><a href="#cb87-79" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb87-80"><a href="#cb87-80" aria-hidden="true" tabindex="-1"></a>  <span class="co">#For 2021 and 2022: rename ST variable to STATE:</span></span>
+<span id="cb87-81"><a href="#cb87-81" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2021</span>, <span class="dv">2022</span>) <span class="sc">&amp;</span> geolevel <span class="sc">==</span> <span class="st">"STATE"</span>){</span>
+<span id="cb87-82"><a href="#cb87-82" aria-hidden="true" tabindex="-1"></a>    tibble <span class="ot">&lt;-</span> tibble <span class="sc">|&gt;</span></span>
+<span id="cb87-83"><a href="#cb87-83" aria-hidden="true" tabindex="-1"></a>      <span class="fu">rename</span>(<span class="st">"STATE"</span> <span class="ot">=</span> <span class="st">"ST"</span>)</span>
+<span id="cb87-84"><a href="#cb87-84" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb87-85"><a href="#cb87-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb87-86"><a href="#cb87-86" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Convert character variables and geolevel to factors using helper function:</span></span>
+<span id="cb87-87"><a href="#cb87-87" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">c</span>(cvar, geolevel)){</span>
+<span id="cb87-88"><a href="#cb87-88" aria-hidden="true" tabindex="-1"></a>    tibble <span class="ot">&lt;-</span> tibble <span class="sc">|&gt;</span></span>
+<span id="cb87-89"><a href="#cb87-89" aria-hidden="true" tabindex="-1"></a>      <span class="fu">convert_to_factor</span>(year, i)</span>
+<span id="cb87-90"><a href="#cb87-90" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb87-91"><a href="#cb87-91" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb87-92"><a href="#cb87-92" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Convert time variables using helper functions:</span></span>
+<span id="cb87-93"><a href="#cb87-93" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="st">"JWAP"</span> <span class="sc">%in%</span> nvar){</span>
+<span id="cb87-94"><a href="#cb87-94" aria-hidden="true" tabindex="-1"></a>    tibble <span class="ot">&lt;-</span> tibble <span class="sc">|&gt;</span></span>
+<span id="cb87-95"><a href="#cb87-95" aria-hidden="true" tabindex="-1"></a>      <span class="fu">convert_to_factor</span>(year, <span class="st">"JWAP"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb87-96"><a href="#cb87-96" aria-hidden="true" tabindex="-1"></a>      <span class="fu">time_midpoint</span>(<span class="st">"JWAP"</span>)</span>
+<span id="cb87-97"><a href="#cb87-97" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb87-98"><a href="#cb87-98" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="st">"JWDP"</span> <span class="sc">%in%</span> nvar){</span>
+<span id="cb87-99"><a href="#cb87-99" aria-hidden="true" tabindex="-1"></a>    tibble <span class="ot">&lt;-</span> tibble <span class="sc">|&gt;</span></span>
+<span id="cb87-100"><a href="#cb87-100" aria-hidden="true" tabindex="-1"></a>      <span class="fu">convert_to_factor</span>(year, <span class="st">"JWDP"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb87-101"><a href="#cb87-101" aria-hidden="true" tabindex="-1"></a>      <span class="fu">time_midpoint</span>(<span class="st">"JWDP"</span>)</span>
+<span id="cb87-102"><a href="#cb87-102" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb87-103"><a href="#cb87-103" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb87-104"><a href="#cb87-104" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Add census class:</span></span>
+<span id="cb87-105"><a href="#cb87-105" aria-hidden="true" tabindex="-1"></a>  <span class="fu">class</span>(tibble) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"census"</span>, <span class="fu">class</span>(tibble))</span>
+<span id="cb87-106"><a href="#cb87-106" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb87-107"><a href="#cb87-107" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(tibble)</span>
+<span id="cb87-108"><a href="#cb87-108" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Examples using the function:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb86"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a>example1 <span class="ot">&lt;-</span> <span class="fu">query</span>(<span class="dv">2024</span>, <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"AGEP"</span>), <span class="st">"SEX"</span>, <span class="st">"STATE"</span>, <span class="dv">37</span>)</span>
-<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb86-3"><a href="#cb86-3" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
-<span id="cb86-4"><a href="#cb86-4" aria-hidden="true" tabindex="-1"></a>example1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>example1 <span class="ot">&lt;-</span> <span class="fu">query</span>(<span class="dv">2024</span>, <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"AGEP"</span>), <span class="st">"SEX"</span>, <span class="st">"STATE"</span>, <span class="dv">37</span>)</span>
+<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb88-3"><a href="#cb88-3" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
+<span id="cb88-4"><a href="#cb88-4" aria-hidden="true" tabindex="-1"></a>example1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 114,270 × 4
    PWGTP  AGEP SEX    STATE            
@@ -985,10 +1050,10 @@ $`2`
 10    37    67 Female North Carolina/NC
 # ℹ 114,260 more rows</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>example2 <span class="ot">&lt;-</span> <span class="fu">query</span>(<span class="dv">2023</span>, <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"AGEP"</span>, <span class="st">"GASP"</span>), <span class="fu">c</span>(<span class="st">"SEX"</span>, <span class="st">"FER"</span>), <span class="st">"REGION"</span>, <span class="dv">1</span>)</span>
-<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb88-3"><a href="#cb88-3" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
-<span id="cb88-4"><a href="#cb88-4" aria-hidden="true" tabindex="-1"></a>example2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>example2 <span class="ot">&lt;-</span> <span class="fu">query</span>(<span class="dv">2023</span>, <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"AGEP"</span>, <span class="st">"GASP"</span>), <span class="fu">c</span>(<span class="st">"SEX"</span>, <span class="st">"FER"</span>), <span class="st">"REGION"</span>, <span class="dv">1</span>)</span>
+<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb90-3"><a href="#cb90-3" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
+<span id="cb90-4"><a href="#cb90-4" aria-hidden="true" tabindex="-1"></a>example2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 590,717 × 6
    PWGTP  AGEP  GASP SEX    FER                                           REGION
@@ -1005,10 +1070,10 @@ $`2`
 10    70    91     3 Female N/A (less than 15 years/greater than 50 year… North…
 # ℹ 590,707 more rows</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>example3 <span class="ot">&lt;-</span> <span class="fu">query</span>(<span class="dv">2021</span>, <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"JWAP"</span>, <span class="st">"JWDP"</span>), <span class="st">"SCH"</span>, <span class="st">"STATE"</span>, <span class="dv">36</span>)</span>
-<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb90-3"><a href="#cb90-3" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
-<span id="cb90-4"><a href="#cb90-4" aria-hidden="true" tabindex="-1"></a>example3</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a>example3 <span class="ot">&lt;-</span> <span class="fu">query</span>(<span class="dv">2021</span>, <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"JWAP"</span>, <span class="st">"JWDP"</span>), <span class="st">"SCH"</span>, <span class="st">"STATE"</span>, <span class="dv">36</span>)</span>
+<span id="cb92-2"><a href="#cb92-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb92-3"><a href="#cb92-3" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
+<span id="cb92-4"><a href="#cb92-4" aria-hidden="true" tabindex="-1"></a>example3</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 200,067 × 5
    PWGTP JWAP   JWDP     SCH                                           STATE    
@@ -1025,67 +1090,131 @@ $`2`
 10    69    NA        NA Yes, private school or college or home school New York…
 # ℹ 200,057 more rows</code></pre>
 </div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a>example4 <span class="ot">&lt;-</span> <span class="fu">query</span>(<span class="dv">2024</span>)</span>
+<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb94-3"><a href="#cb94-3" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
+<span id="cb94-4"><a href="#cb94-4" aria-hidden="true" tabindex="-1"></a>example4</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 114,270 × 4
+   PWGTP  AGEP SEX    STATE            
+   &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt;            
+ 1    60    23 Male   North Carolina/NC
+ 2    49    21 Male   North Carolina/NC
+ 3    24    20 Male   North Carolina/NC
+ 4    54    79 Female North Carolina/NC
+ 5    79    18 Male   North Carolina/NC
+ 6    54    19 Female North Carolina/NC
+ 7    58    22 Female North Carolina/NC
+ 8    17    18 Female North Carolina/NC
+ 9    30    22 Male   North Carolina/NC
+10    37    67 Female North Carolina/NC
+# ℹ 114,260 more rows</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a>example5 <span class="ot">&lt;-</span> <span class="fu">query</span>(<span class="dv">2022</span>, <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"AGEP"</span>), <span class="st">"SEX"</span>, <span class="st">"DIVISION"</span>, <span class="st">"all"</span>)</span>
+<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
+<span id="cb96-4"><a href="#cb96-4" aria-hidden="true" tabindex="-1"></a>example5</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3,373,378 × 4
+   PWGTP  AGEP SEX    DIVISION                           
+   &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt;                              
+ 1     3    17 Female West North Central (Midwest region)
+ 2    42    73 Male   South Atlantic (South region)      
+ 3    11    22 Male   East North Central (Midwest region)
+ 4    32    82 Female East North Central (Midwest region)
+ 5    31    19 Female Middle Atlantic (Northeast region) 
+ 6    32    88 Male   South Atlantic (South region)      
+ 7    45    80 Male   South Atlantic (South region)      
+ 8    37    33 Male   Mountain (West region)             
+ 9    29    44 Male   Mountain (West region)             
+10    55    36 Male   West South Central (South Region)  
+# ℹ 3,373,368 more rows</code></pre>
+</div>
+</div>
+<p>Tests to show input validation:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Examples showing invalid inputs:</span></span>
+<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a><span class="fu">query</span>(<span class="dv">2025</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in `query()`:
+! Invalid year: please enter 2021, 2022, 2023, or 2024</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a><span class="fu">query</span>(<span class="dv">2024</span>, <span class="fu">c</span>(<span class="st">"JWAP"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in `query()`:
+! Please include "PWGTP" in list of numeric variables.</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="fu">query</span>(<span class="dv">2024</span>, <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"JWAP"</span>), <span class="fu">c</span>())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in `query()`:
+! Please include at least one categorical variable.</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb104"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="fu">query</span>(<span class="dv">2023</span>, <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"JWAP"</span>), <span class="st">"SCH"</span>, <span class="st">"AREA"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in `query()`:
+! Please enter "STATE", "REGION", or "DIVISION" for geolevel.</code></pre>
+</div>
 </div>
 </section>
 <section id="combining-years" class="level4">
 <h4 class="anchored" data-anchor-id="combining-years">Combining Years</h4>
 <p>Write a function that calls the single-year function as many times as needed and then combines the data into one final tibble with a year variable.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a>multiyear_query <span class="ot">&lt;-</span> <span class="cf">function</span>(years, nvar, cvar, geolevel, geovalue){</span>
-<span id="cb92-2"><a href="#cb92-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb92-3"><a href="#cb92-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#initialize a flag to keep track of if it is the first year</span></span>
-<span id="cb92-4"><a href="#cb92-4" aria-hidden="true" tabindex="-1"></a>  firstyear <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb92-5"><a href="#cb92-5" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb92-6"><a href="#cb92-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (year <span class="cf">in</span> years){</span>
-<span id="cb92-7"><a href="#cb92-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb92-8"><a href="#cb92-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(firstyear<span class="sc">==</span><span class="dv">1</span>){</span>
-<span id="cb92-9"><a href="#cb92-9" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb92-10"><a href="#cb92-10" aria-hidden="true" tabindex="-1"></a>      <span class="co">#for the first year: run the single-year query and assign the year variable</span></span>
-<span id="cb92-11"><a href="#cb92-11" aria-hidden="true" tabindex="-1"></a>      tibble <span class="ot">&lt;-</span> <span class="fu">query</span>(year, nvar, cvar, geolevel, geovalue) <span class="sc">|&gt;</span></span>
-<span id="cb92-12"><a href="#cb92-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">as.character</span>(year))</span>
-<span id="cb92-13"><a href="#cb92-13" aria-hidden="true" tabindex="-1"></a>      <span class="co">#note: formatting year as character for categorical analysis</span></span>
-<span id="cb92-14"><a href="#cb92-14" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb92-15"><a href="#cb92-15" aria-hidden="true" tabindex="-1"></a>      <span class="co">#change the firstyearflag for the next iteration of the for loop</span></span>
-<span id="cb92-16"><a href="#cb92-16" aria-hidden="true" tabindex="-1"></a>      firstyear <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb92-17"><a href="#cb92-17" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb92-18"><a href="#cb92-18" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb92-19"><a href="#cb92-19" aria-hidden="true" tabindex="-1"></a>      <span class="co">#for every year after the first year, append new rows to the working tibble</span></span>
-<span id="cb92-20"><a href="#cb92-20" aria-hidden="true" tabindex="-1"></a>      tibble <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(tibble,</span>
-<span id="cb92-21"><a href="#cb92-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">query</span>(year, nvar, cvar, geolevel, geovalue) <span class="sc">|&gt;</span></span>
-<span id="cb92-22"><a href="#cb92-22" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">as.character</span>(year)))</span>
-<span id="cb92-23"><a href="#cb92-23" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb92-24"><a href="#cb92-24" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb92-25"><a href="#cb92-25" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb92-26"><a href="#cb92-26" aria-hidden="true" tabindex="-1"></a>  <span class="co">#after all years have been processed, return the final tibble</span></span>
-<span id="cb92-27"><a href="#cb92-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(tibble)</span>
-<span id="cb92-28"><a href="#cb92-28" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb106"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a>multiyear_query <span class="ot">&lt;-</span> <span class="cf">function</span>(years, nvar, cvar, geolevel, geovalue){</span>
+<span id="cb106-2"><a href="#cb106-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb106-3"><a href="#cb106-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#initialize a flag to keep track of if it is the first year</span></span>
+<span id="cb106-4"><a href="#cb106-4" aria-hidden="true" tabindex="-1"></a>  firstyear <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb106-5"><a href="#cb106-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb106-6"><a href="#cb106-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (year <span class="cf">in</span> years){</span>
+<span id="cb106-7"><a href="#cb106-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb106-8"><a href="#cb106-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(firstyear<span class="sc">==</span><span class="dv">1</span>){</span>
+<span id="cb106-9"><a href="#cb106-9" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb106-10"><a href="#cb106-10" aria-hidden="true" tabindex="-1"></a>      <span class="co">#for the first year: run the single-year query and assign the year variable</span></span>
+<span id="cb106-11"><a href="#cb106-11" aria-hidden="true" tabindex="-1"></a>      tibble <span class="ot">&lt;-</span> <span class="fu">query</span>(year, nvar, cvar, geolevel, geovalue) <span class="sc">|&gt;</span></span>
+<span id="cb106-12"><a href="#cb106-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">as.character</span>(year))</span>
+<span id="cb106-13"><a href="#cb106-13" aria-hidden="true" tabindex="-1"></a>      <span class="co">#note: formatting year as character for categorical analysis</span></span>
+<span id="cb106-14"><a href="#cb106-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb106-15"><a href="#cb106-15" aria-hidden="true" tabindex="-1"></a>      <span class="co">#change the firstyearflag for the next iteration of the for loop</span></span>
+<span id="cb106-16"><a href="#cb106-16" aria-hidden="true" tabindex="-1"></a>      firstyear <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb106-17"><a href="#cb106-17" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb106-18"><a href="#cb106-18" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb106-19"><a href="#cb106-19" aria-hidden="true" tabindex="-1"></a>      <span class="co">#for every year after the first year, append new rows to the working tibble</span></span>
+<span id="cb106-20"><a href="#cb106-20" aria-hidden="true" tabindex="-1"></a>      tibble <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(tibble,</span>
+<span id="cb106-21"><a href="#cb106-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">query</span>(year, nvar, cvar, geolevel, geovalue) <span class="sc">|&gt;</span></span>
+<span id="cb106-22"><a href="#cb106-22" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">as.character</span>(year)))</span>
+<span id="cb106-23"><a href="#cb106-23" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb106-24"><a href="#cb106-24" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb106-25"><a href="#cb106-25" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb106-26"><a href="#cb106-26" aria-hidden="true" tabindex="-1"></a>  <span class="co">#after all years have been processed, return the final tibble</span></span>
+<span id="cb106-27"><a href="#cb106-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(tibble)</span>
+<span id="cb106-28"><a href="#cb106-28" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Examples:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a>example4 <span class="ot">&lt;-</span> <span class="fu">multiyear_query</span>(<span class="fu">c</span>(<span class="dv">2023</span>, <span class="dv">2024</span>), <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"AGEP"</span>), <span class="st">"SEX"</span>, <span class="st">"STATE"</span>, <span class="dv">37</span>)</span>
-<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb93-3"><a href="#cb93-3" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
-<span id="cb93-4"><a href="#cb93-4" aria-hidden="true" tabindex="-1"></a>example4</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb107"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a>example6 <span class="ot">&lt;-</span> <span class="fu">multiyear_query</span>(<span class="fu">c</span>(<span class="dv">2023</span>, <span class="dv">2024</span>), <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"AGEP"</span>), <span class="st">"SEX"</span>, <span class="st">"REGION"</span>, <span class="st">"all"</span>)</span>
+<span id="cb107-2"><a href="#cb107-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb107-3"><a href="#cb107-3" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
+<span id="cb107-4"><a href="#cb107-4" aria-hidden="true" tabindex="-1"></a>example6</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 226,190 × 5
-   PWGTP  AGEP SEX    STATE             year 
-   &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt;             &lt;chr&gt;
- 1    62    18 Female North Carolina/NC 2023 
- 2    94    93 Female North Carolina/NC 2023 
- 3    73    22 Male   North Carolina/NC 2023 
- 4    63    39 Male   North Carolina/NC 2023 
- 5    50    19 Male   North Carolina/NC 2023 
- 6    41    39 Male   North Carolina/NC 2023 
- 7    16    26 Female North Carolina/NC 2023 
- 8    10    19 Male   North Carolina/NC 2023 
- 9    53    34 Male   North Carolina/NC 2023 
-10     7    19 Female North Carolina/NC 2023 
-# ℹ 226,180 more rows</code></pre>
+<pre><code># A tibble: 6,828,697 × 5
+   PWGTP  AGEP SEX    REGION    year 
+   &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt;     &lt;chr&gt;
+ 1    69    94 Female Northeast 2023 
+ 2    42    18 Male   Northeast 2023 
+ 3    18    75 Male   West      2023 
+ 4    24    44 Male   South     2023 
+ 5    49    31 Male   Midwest   2023 
+ 6    78    19 Female Northeast 2023 
+ 7    21    36 Male   Midwest   2023 
+ 8   153    47 Female South     2023 
+ 9    85    19 Female West      2023 
+10    93    15 Male   South     2023 
+# ℹ 6,828,687 more rows</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a>example5 <span class="ot">&lt;-</span> <span class="fu">multiyear_query</span>(<span class="fu">c</span>(<span class="dv">2021</span>, <span class="dv">2023</span>), <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"JWAP"</span>), <span class="fu">c</span>(<span class="st">"FER"</span>, <span class="st">"HHL"</span>), <span class="st">"DIVISION"</span>, <span class="dv">9</span>)</span>
-<span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb95-3"><a href="#cb95-3" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
-<span id="cb95-4"><a href="#cb95-4" aria-hidden="true" tabindex="-1"></a>example5</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb109"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a>example7 <span class="ot">&lt;-</span> <span class="fu">multiyear_query</span>(<span class="fu">c</span>(<span class="dv">2021</span>, <span class="dv">2023</span>), <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"JWAP"</span>), <span class="fu">c</span>(<span class="st">"FER"</span>, <span class="st">"HHL"</span>), <span class="st">"DIVISION"</span>, <span class="dv">9</span>)</span>
+<span id="cb109-2"><a href="#cb109-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb109-3"><a href="#cb109-3" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
+<span id="cb109-4"><a href="#cb109-4" aria-hidden="true" tabindex="-1"></a>example7</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1,068,677 × 6
    PWGTP JWAP   FER                                         HHL   DIVISION year 
@@ -1102,14 +1231,14 @@ $`2`
 10    60    NA  N/A (less than 15 years/greater than 50 ye… N/A … Pacific… 2021 
 # ℹ 1,068,667 more rows</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb97"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="co">#all North Carolina data:</span></span>
-<span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a>example6 <span class="ot">&lt;-</span> <span class="fu">multiyear_query</span>(<span class="dv">2021</span><span class="sc">:</span><span class="dv">2024</span>,</span>
-<span id="cb97-3"><a href="#cb97-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"AGEP"</span>, <span class="st">"GASP"</span>, <span class="st">"GRPIP"</span>, <span class="st">"JWAP"</span>, <span class="st">"JWDP"</span>, <span class="st">"JWMNP"</span>),</span>
-<span id="cb97-4"><a href="#cb97-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">c</span>(<span class="st">"FER"</span>, <span class="st">"HHL"</span>, <span class="st">"SCH"</span>, <span class="st">"SCHL"</span>, <span class="st">"SEX"</span>),</span>
-<span id="cb97-5"><a href="#cb97-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"STATE"</span>, <span class="dv">37</span>)</span>
-<span id="cb97-6"><a href="#cb97-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb97-7"><a href="#cb97-7" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
-<span id="cb97-8"><a href="#cb97-8" aria-hidden="true" tabindex="-1"></a>example6</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb111"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a><span class="co">#all North Carolina data:</span></span>
+<span id="cb111-2"><a href="#cb111-2" aria-hidden="true" tabindex="-1"></a>example8 <span class="ot">&lt;-</span> <span class="fu">multiyear_query</span>(<span class="dv">2021</span><span class="sc">:</span><span class="dv">2024</span>,</span>
+<span id="cb111-3"><a href="#cb111-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">c</span>(<span class="st">"PWGTP"</span>, <span class="st">"AGEP"</span>, <span class="st">"GASP"</span>, <span class="st">"GRPIP"</span>, <span class="st">"JWAP"</span>, <span class="st">"JWDP"</span>, <span class="st">"JWMNP"</span>),</span>
+<span id="cb111-4"><a href="#cb111-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">c</span>(<span class="st">"FER"</span>, <span class="st">"HHL"</span>, <span class="st">"SCH"</span>, <span class="st">"SCHL"</span>, <span class="st">"SEX"</span>),</span>
+<span id="cb111-5"><a href="#cb111-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"STATE"</span>, <span class="dv">37</span>)</span>
+<span id="cb111-6"><a href="#cb111-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb111-7"><a href="#cb111-7" aria-hidden="true" tabindex="-1"></a><span class="co">#view results</span></span>
+<span id="cb111-8"><a href="#cb111-8" aria-hidden="true" tabindex="-1"></a>example8</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 439,757 × 14
    PWGTP  AGEP  GASP GRPIP JWAP  JWDP  JWMNP FER   HHL   SCH   SCHL  SEX   STATE
@@ -1136,36 +1265,52 @@ $`2`
 <h4 class="anchored" data-anchor-id="numeric-summaries">Numeric Summaries</h4>
 <p>Write a function that produces means and standard deviations for our numeric variable(s) (ignore the time variables) and counts for our categorical variable(s) (year should be treated as categorical).</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb99"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a>summary.census <span class="ot">&lt;-</span> <span class="cf">function</span>(tibble, nvar, cvar){</span>
-<span id="cb99-2"><a href="#cb99-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb99-3"><a href="#cb99-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#initialize empty lists for the results</span></span>
-<span id="cb99-4"><a href="#cb99-4" aria-hidden="true" tabindex="-1"></a>  numeric_results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb99-5"><a href="#cb99-5" aria-hidden="true" tabindex="-1"></a>  categorical_results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb99-6"><a href="#cb99-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb99-7"><a href="#cb99-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#summarize numeric variables</span></span>
-<span id="cb99-8"><a href="#cb99-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (x <span class="cf">in</span> nvar){</span>
-<span id="cb99-9"><a href="#cb99-9" aria-hidden="true" tabindex="-1"></a>    sample_mean <span class="ot">&lt;-</span> <span class="fu">sum</span>(tibble[[x]]<span class="sc">*</span>tibble<span class="sc">$</span>PWGTP) <span class="sc">/</span> <span class="fu">sum</span>(tibble<span class="sc">$</span>PWGTP)</span>
-<span id="cb99-10"><a href="#cb99-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb99-11"><a href="#cb99-11" aria-hidden="true" tabindex="-1"></a>    sample_sd <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(tibble[[x]]<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>tibble<span class="sc">$</span>PWGTP) <span class="sc">/</span> <span class="fu">sum</span>(tibble<span class="sc">$</span>PWGTP)<span class="sc">-</span>sample_mean<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb99-12"><a href="#cb99-12" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb99-13"><a href="#cb99-13" aria-hidden="true" tabindex="-1"></a>    numeric_results[[x]] <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">sample_mean =</span> sample_mean,</span>
-<span id="cb99-14"><a href="#cb99-14" aria-hidden="true" tabindex="-1"></a>                         <span class="at">sample_sd =</span> sample_sd)</span>
-<span id="cb99-15"><a href="#cb99-15" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb99-16"><a href="#cb99-16" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb99-17"><a href="#cb99-17" aria-hidden="true" tabindex="-1"></a>  <span class="co">#summarize categorical variables</span></span>
-<span id="cb99-18"><a href="#cb99-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (x <span class="cf">in</span> cvar){</span>
-<span id="cb99-19"><a href="#cb99-19" aria-hidden="true" tabindex="-1"></a>    categorical_results[[x]] <span class="ot">&lt;-</span> <span class="fu">table</span>(tibble[[x]], <span class="at">useNA =</span> <span class="st">"always"</span>)</span>
-<span id="cb99-20"><a href="#cb99-20" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb99-21"><a href="#cb99-21" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb99-22"><a href="#cb99-22" aria-hidden="true" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">numeric =</span> numeric_results,</span>
-<span id="cb99-23"><a href="#cb99-23" aria-hidden="true" tabindex="-1"></a>                  <span class="at">categorical =</span> categorical_results)</span>
-<span id="cb99-24"><a href="#cb99-24" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb99-25"><a href="#cb99-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(results)</span>
-<span id="cb99-26"><a href="#cb99-26" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb113"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a>summary.census <span class="ot">&lt;-</span> <span class="cf">function</span>(tibble,</span>
+<span id="cb113-2"><a href="#cb113-2" aria-hidden="true" tabindex="-1"></a>                           <span class="at">nvar =</span> <span class="cn">NULL</span>,</span>
+<span id="cb113-3"><a href="#cb113-3" aria-hidden="true" tabindex="-1"></a>                           <span class="at">cvar =</span> <span class="cn">NULL</span>){</span>
+<span id="cb113-4"><a href="#cb113-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb113-5"><a href="#cb113-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#set defaults if variables are not specified</span></span>
+<span id="cb113-6"><a href="#cb113-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(nvar)){</span>
+<span id="cb113-7"><a href="#cb113-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">#default is all numeric variables except for PWGTP and the time variables</span></span>
+<span id="cb113-8"><a href="#cb113-8" aria-hidden="true" tabindex="-1"></a>    nvar <span class="ot">&lt;-</span> <span class="fu">attributes</span>(tibble)<span class="sc">$</span>names</span>
+<span id="cb113-9"><a href="#cb113-9" aria-hidden="true" tabindex="-1"></a>    nvar <span class="ot">&lt;-</span> nvar[nvar <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"AGEP"</span>,<span class="st">"GASP"</span>,<span class="st">"GRPIP"</span>,<span class="st">"JWMNP"</span>)]</span>
+<span id="cb113-10"><a href="#cb113-10" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb113-11"><a href="#cb113-11" aria-hidden="true" tabindex="-1"></a>   </span>
+<span id="cb113-12"><a href="#cb113-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(cvar)){ </span>
+<span id="cb113-13"><a href="#cb113-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">#default is all character variables</span></span>
+<span id="cb113-14"><a href="#cb113-14" aria-hidden="true" tabindex="-1"></a>    cvar <span class="ot">&lt;-</span> <span class="fu">attributes</span>(tibble)<span class="sc">$</span>names</span>
+<span id="cb113-15"><a href="#cb113-15" aria-hidden="true" tabindex="-1"></a>    cvar <span class="ot">&lt;-</span> cvar[cvar <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"FER"</span>,<span class="st">"HHL"</span>,<span class="st">"SCH"</span>,<span class="st">"SCHL"</span>,<span class="st">"SEX"</span>)]</span>
+<span id="cb113-16"><a href="#cb113-16" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb113-17"><a href="#cb113-17" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb113-18"><a href="#cb113-18" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb113-19"><a href="#cb113-19" aria-hidden="true" tabindex="-1"></a>  <span class="co">#initialize empty lists for the results</span></span>
+<span id="cb113-20"><a href="#cb113-20" aria-hidden="true" tabindex="-1"></a>  numeric_results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb113-21"><a href="#cb113-21" aria-hidden="true" tabindex="-1"></a>  categorical_results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb113-22"><a href="#cb113-22" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb113-23"><a href="#cb113-23" aria-hidden="true" tabindex="-1"></a>  <span class="co">#summarize numeric variables</span></span>
+<span id="cb113-24"><a href="#cb113-24" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (x <span class="cf">in</span> nvar){</span>
+<span id="cb113-25"><a href="#cb113-25" aria-hidden="true" tabindex="-1"></a>    sample_mean <span class="ot">&lt;-</span> <span class="fu">sum</span>(tibble[[x]]<span class="sc">*</span>tibble<span class="sc">$</span>PWGTP) <span class="sc">/</span> <span class="fu">sum</span>(tibble<span class="sc">$</span>PWGTP)</span>
+<span id="cb113-26"><a href="#cb113-26" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb113-27"><a href="#cb113-27" aria-hidden="true" tabindex="-1"></a>    sample_sd <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(tibble[[x]]<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>tibble<span class="sc">$</span>PWGTP) <span class="sc">/</span> <span class="fu">sum</span>(tibble<span class="sc">$</span>PWGTP)<span class="sc">-</span>sample_mean<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb113-28"><a href="#cb113-28" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb113-29"><a href="#cb113-29" aria-hidden="true" tabindex="-1"></a>    numeric_results[[x]] <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">sample_mean =</span> sample_mean,</span>
+<span id="cb113-30"><a href="#cb113-30" aria-hidden="true" tabindex="-1"></a>                         <span class="at">sample_sd =</span> sample_sd)</span>
+<span id="cb113-31"><a href="#cb113-31" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb113-32"><a href="#cb113-32" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb113-33"><a href="#cb113-33" aria-hidden="true" tabindex="-1"></a>  <span class="co">#summarize categorical variables</span></span>
+<span id="cb113-34"><a href="#cb113-34" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (x <span class="cf">in</span> cvar){</span>
+<span id="cb113-35"><a href="#cb113-35" aria-hidden="true" tabindex="-1"></a>    categorical_results[[x]] <span class="ot">&lt;-</span> <span class="fu">table</span>(tibble[[x]], <span class="at">useNA =</span> <span class="st">"always"</span>)</span>
+<span id="cb113-36"><a href="#cb113-36" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb113-37"><a href="#cb113-37" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb113-38"><a href="#cb113-38" aria-hidden="true" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">numeric =</span> numeric_results,</span>
+<span id="cb113-39"><a href="#cb113-39" aria-hidden="true" tabindex="-1"></a>                  <span class="at">categorical =</span> categorical_results)</span>
+<span id="cb113-40"><a href="#cb113-40" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb113-41"><a href="#cb113-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(results)</span>
+<span id="cb113-42"><a href="#cb113-42" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Examples:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(example6, <span class="fu">c</span>(<span class="st">"AGEP"</span>, <span class="st">"GASP"</span>), <span class="fu">c</span>(<span class="st">"SEX"</span>, <span class="st">"SCH"</span>, <span class="st">"year"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb114"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(example8, <span class="fu">c</span>(<span class="st">"AGEP"</span>, <span class="st">"GASP"</span>), <span class="fu">c</span>(<span class="st">"SEX"</span>, <span class="st">"SCH"</span>, <span class="st">"year"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$numeric
 $numeric$AGEP
@@ -1201,53 +1346,169 @@ $categorical$year
   2021   2022   2023   2024   &lt;NA&gt; 
 104337 109230 111920 114270      0 </code></pre>
 </div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb116"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(example8)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$numeric
+$numeric$AGEP
+sample_mean   sample_sd 
+   39.67205    23.20707 
+
+$numeric$GASP
+sample_mean   sample_sd 
+   46.06164   111.93232 
+
+$numeric$GRPIP
+sample_mean   sample_sd 
+    9.84008    21.16603 
+
+$numeric$JWMNP
+sample_mean   sample_sd 
+   10.03340    18.15596 
+
+
+$categorical
+$categorical$FER
+
+N/A (less than 15 years/greater than 50 years/ male) 
+                                              347032 
+                                                  No 
+                                               88195 
+                                                 Yes 
+                                                4530 
+                                                &lt;NA&gt; 
+                                                   0 
+
+$categorical$HHL
+
+                   N/A (GQ/vacant)                            Spanish 
+                             27589                              34781 
+     Other Indo-European languages                       English Only 
+                             12436                             350838 
+Asian and Pacific Island languages                     Other Language 
+                             10563                               3550 
+                              &lt;NA&gt; 
+                                 0 
+
+$categorical$SCH
+
+                  N/A (less than 3 years old) 
+                                        11400 
+Yes, private school or college or home school 
+                                        19512 
+    No, has not attended in the last 3 months 
+                                       334557 
+         Yes, public school or public college 
+                                        74288 
+                                         &lt;NA&gt; 
+                                            0 
+
+$categorical$SCHL
+
+                   Regular high school diploma 
+                                         78775 
+                        No schooling completed 
+                                         12350 
+                                       Grade 1 
+                                          4353 
+                                  Kindergarten 
+                                          4604 
+                                       Grade 4 
+                                          4897 
+Professional degree beyond a bachelor's degree 
+                                          7087 
+  1 or more years of college credit, no degree 
+                                         49477 
+                               Master's degree 
+                                         33550 
+                                       Grade 7 
+                                          5793 
+                            Associate's degree 
+                                         34551 
+                   N/A (less than 3 years old) 
+                                         11400 
+                     Nursery school, preschool 
+                                          5474 
+                             Bachelor's degree 
+                                         75748 
+                                       Grade 5 
+                                          5223 
+                              Doctorate degree 
+                                          5866 
+                                       Grade 3 
+                                          4833 
+                                      Grade 11 
+                                         10229 
+                 GED or alternative credential 
+                                         15151 
+                                       Grade 9 
+                                          9264 
+                       12th grade - no diploma 
+                                          6024 
+                                      Grade 10 
+                                         10155 
+                                       Grade 2 
+                                          4593 
+                                       Grade 8 
+                                          7924 
+            Some college, but less than 1 year 
+                                         26349 
+                                       Grade 6 
+                                          6087 
+                                          &lt;NA&gt; 
+                                             0 
+
+$categorical$SEX
+
+  Male Female   &lt;NA&gt; 
+213464 226293      0 </code></pre>
+</div>
 </div>
 </section>
 <section id="graphical-summaries" class="level4">
 <h4 class="anchored" data-anchor-id="graphical-summaries">Graphical Summaries</h4>
 <p>Create a generic <code>plot()</code> function for a <code>census</code> class tibble which creates a boxplot of a numeric variable at the levels of the categorical variable.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a>plot.census <span class="ot">&lt;-</span> <span class="cf">function</span>(tibble, num_var, cat_var){</span>
-<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb102-3"><a href="#cb102-3" aria-hidden="true" tabindex="-1"></a><span class="co">#initialize the plot</span></span>
-<span id="cb102-4"><a href="#cb102-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(tibble) <span class="sc">+</span></span>
-<span id="cb102-5"><a href="#cb102-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb102-6"><a href="#cb102-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">#add boxplot layer</span></span>
-<span id="cb102-7"><a href="#cb102-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">get</span>(cat_var),</span>
-<span id="cb102-8"><a href="#cb102-8" aria-hidden="true" tabindex="-1"></a>                     <span class="at">y =</span> <span class="fu">get</span>(num_var),</span>
-<span id="cb102-9"><a href="#cb102-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">fill =</span> <span class="fu">get</span>(cat_var),</span>
-<span id="cb102-10"><a href="#cb102-10" aria-hidden="true" tabindex="-1"></a>                     <span class="at">weight =</span> PWGTP)) <span class="sc">+</span></span>
-<span id="cb102-11"><a href="#cb102-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb102-12"><a href="#cb102-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">#set x and y labels and title</span></span>
-<span id="cb102-13"><a href="#cb102-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">paste</span>(num_var, cat_var, <span class="at">sep =</span> <span class="st">" by "</span>),</span>
-<span id="cb102-14"><a href="#cb102-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">x =</span> cat_var,</span>
-<span id="cb102-15"><a href="#cb102-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> num_var) <span class="sc">+</span></span>
-<span id="cb102-16"><a href="#cb102-16" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb102-17"><a href="#cb102-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">#set legend label</span></span>
-<span id="cb102-18"><a href="#cb102-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_discrete</span>(cat_var) <span class="sc">+</span></span>
-<span id="cb102-19"><a href="#cb102-19" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb102-20"><a href="#cb102-20" aria-hidden="true" tabindex="-1"></a>    <span class="co">#set the color theme</span></span>
-<span id="cb102-21"><a href="#cb102-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_light</span>() <span class="sc">+</span></span>
-<span id="cb102-22"><a href="#cb102-22" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb102-23"><a href="#cb102-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">#center the title</span></span>
-<span id="cb102-24"><a href="#cb102-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span>
-<span id="cb102-25"><a href="#cb102-25" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb118"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a>plot.census <span class="ot">&lt;-</span> <span class="cf">function</span>(tibble, num_var, cat_var){</span>
+<span id="cb118-2"><a href="#cb118-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb118-3"><a href="#cb118-3" aria-hidden="true" tabindex="-1"></a><span class="co">#initialize the plot</span></span>
+<span id="cb118-4"><a href="#cb118-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(tibble) <span class="sc">+</span></span>
+<span id="cb118-5"><a href="#cb118-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb118-6"><a href="#cb118-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">#add boxplot layer</span></span>
+<span id="cb118-7"><a href="#cb118-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">get</span>(cat_var),</span>
+<span id="cb118-8"><a href="#cb118-8" aria-hidden="true" tabindex="-1"></a>                     <span class="at">y =</span> <span class="fu">get</span>(num_var),</span>
+<span id="cb118-9"><a href="#cb118-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">fill =</span> <span class="fu">get</span>(cat_var),</span>
+<span id="cb118-10"><a href="#cb118-10" aria-hidden="true" tabindex="-1"></a>                     <span class="at">weight =</span> PWGTP)) <span class="sc">+</span></span>
+<span id="cb118-11"><a href="#cb118-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb118-12"><a href="#cb118-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">#set x and y labels and title</span></span>
+<span id="cb118-13"><a href="#cb118-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">paste</span>(num_var, cat_var, <span class="at">sep =</span> <span class="st">" by "</span>),</span>
+<span id="cb118-14"><a href="#cb118-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">x =</span> cat_var,</span>
+<span id="cb118-15"><a href="#cb118-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> num_var) <span class="sc">+</span></span>
+<span id="cb118-16"><a href="#cb118-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb118-17"><a href="#cb118-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">#set legend label</span></span>
+<span id="cb118-18"><a href="#cb118-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_discrete</span>(cat_var) <span class="sc">+</span></span>
+<span id="cb118-19"><a href="#cb118-19" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb118-20"><a href="#cb118-20" aria-hidden="true" tabindex="-1"></a>    <span class="co">#set the color theme</span></span>
+<span id="cb118-21"><a href="#cb118-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_light</span>() <span class="sc">+</span></span>
+<span id="cb118-22"><a href="#cb118-22" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb118-23"><a href="#cb118-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">#center the title</span></span>
+<span id="cb118-24"><a href="#cb118-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span>
+<span id="cb118-25"><a href="#cb118-25" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Examples:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb103"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(example6, <span class="st">"AGEP"</span>, <span class="st">"SEX"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb119"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb119-1"><a href="#cb119-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(example8, <span class="st">"AGEP"</span>, <span class="st">"SEX"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Project1_files/figure-html/unnamed-chunk-39-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Project1_files/figure-html/unnamed-chunk-41-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb104"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(example6, <span class="st">"GASP"</span>, <span class="st">"year"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb120"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb120-1"><a href="#cb120-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(example8, <span class="st">"GASP"</span>, <span class="st">"year"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Project1_files/figure-html/unnamed-chunk-39-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Project1_files/figure-html/unnamed-chunk-41-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>

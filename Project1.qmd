@@ -51,7 +51,6 @@ A status code of 200 means that the API call was successful.
 First, we will practice parsing variable values using 2021 variables.
 
 ```{r}
-
 #Call the API:
 vars2021 <- GET("https://api.census.gov/data/2021/acs/acs1/pums/variables.json")
 
@@ -472,6 +471,15 @@ Now formulate this process into a tidy-style function!
 ```{r}
 time_midpoint <- function(tibble, timecolumn){
   
+  #validate inputs
+  if (!(is_tibble(tibble))) {
+    stop("First argument is not a tibble.")
+  } else if (!(timecolumn %in% c("JWAP", "JWDP"))){
+    stop('Invalid timecolumn: Please enter "JWAP" or "JWDP"')
+  }
+  
+  #clean timecolumn
+  
   tibble[[timecolumn]] <- as_hms(rowMeans(matrix(c(
   
   as.numeric(as_hms(parse_date_time(
@@ -495,13 +503,19 @@ Now test this on our example tibble:
 
 ```{r}
 astibble <- astibble |>
-  rowwise() |> #rowwise groups by one row at a time
   time_midpoint("JWAP") |>
   time_midpoint("JWDP")
 
 #view results
 astibble |>
   select(JWAP, JWDP)
+```
+
+Test to show input validation:
+
+```{r}
+astibble |>
+  time_midpoint("AGEP")
 ```
 
 Add **census** class:
@@ -518,17 +532,69 @@ class(astibble)
 Now that we have gone through a full example of cleaning a single API call, we can use the helper functions we created to create an overall function which queries the API for a single year and then does all the data cleaning.
 
 ```{r}
-query <- function(year, nvar, cvar, geolevel, geovalue){
+query <- function(year = 2024,
+                  nvar = c("PWGTP", "AGEP"),
+                  cvar = "SEX",
+                  geolevel = "STATE",
+                  geovalue = NULL){
   
-  #translate geolevel into numeric geolevel:
+  #Validate geolevel input and translate into numeric geolevel:
   if (geolevel == "STATE"){
     geolevel_translated <- "040"
+    
+    #set default geovalue for state
+    if (is.null(geovalue)){
+      geovalue <- 37 #North Carolina
+    }
   } else if (geolevel == "REGION"){
     geolevel_translated <- "020"
+    
+    #set default geovalue for region
+    if (is.null(geovalue)){
+      geovalue <- 3 #South
+    }
   } else if (geolevel == "DIVISION"){
     geolevel_translated <- "030"
+    
+    #set default geovalue for division
+    if (is.null(geovalue)){
+      geovalue <- 5 #South Atlantic
+    }
   } else {
     stop('Please enter "STATE", "REGION", or "DIVISION" for geolevel.')
+  }
+  
+  #More input validation:
+  if (!(year %in% c(2021, 2022, 2023, 2024))){
+    stop("Invalid year: please enter 2021, 2022, 2023, or 2024")
+  } else if (!("PWGTP" %in% nvar)){
+    stop('Please include "PWGTP" in list of numeric variables.')
+  } else if (length(nvar) < 2){
+    stop('Please include at least one other numeric varible besides "PWGTP".')
+  } else if (length(cvar) < 1){
+    stop("Please include at least one categorical variable.")
+  }
+  
+  #Validate numeric variables:
+  for (i in nvar){
+    if (!(i %in% c("PWGTP","AGEP","GASP","GRPIP","JWAP","JWDP","JWMNP"))){
+      stop('Invalid numeric variable. Please enter "PWGTP", "AGEP", "GASP", "GRPIP", "JWAP", "JWDP", or "JWMNP".')
+    }
+  }
+  
+  #Validate character variables:
+  for (i in cvar){
+    if (!(i %in% c("FER","HHL","SCH","SCHL","SEX"))){
+      stop('Invalid categorical varibale. Please enter "FER", "HHL", "SCH", "SCHL", or "SEX".')
+    }
+  }
+  
+  #Formulate geolevel and geovalue portion of API call:
+  if (geovalue == "all"){
+    geo_api <- paste0(",", geolevel)
+  } else {
+    geo_api <- paste0("&ucgid=", geolevel_translated,
+    "0000US", geovalue)
   }
   
   #API call:
@@ -538,10 +604,7 @@ query <- function(year, nvar, cvar, geolevel, geovalue){
     paste(nvar, collapse = ","),
     ",",
     paste(cvar, collapse = ","),
-    "&ucgid=",
-    geolevel_translated,
-    "0000US",
-    geovalue,
+    geo_api,
     "&key=",
     key))
 
@@ -596,6 +659,26 @@ example3 <- query(2021, c("PWGTP", "JWAP", "JWDP"), "SCH", "STATE", 36)
 
 #view results
 example3
+
+example4 <- query(2024)
+
+#view results
+example4
+
+example5 <- query(2022, c("PWGTP", "AGEP"), "SEX", "DIVISION", "all")
+
+#view results
+example5
+```
+
+Tests to show input validation:
+
+```{r}
+#Examples showing invalid inputs:
+query(2025)
+query(2024, c("JWAP"))
+query(2024, c("PWGTP", "JWAP"), c())
+query(2023, c("PWGTP", "JWAP"), "SCH", "AREA")
 ```
 
 #### Combining Years
@@ -636,24 +719,24 @@ multiyear_query <- function(years, nvar, cvar, geolevel, geovalue){
 Examples:
 
 ```{r}
-example4 <- multiyear_query(c(2023, 2024), c("PWGTP", "AGEP"), "SEX", "STATE", 37)
+example6 <- multiyear_query(c(2023, 2024), c("PWGTP", "AGEP"), "SEX", "REGION", "all")
 
 #view results
-example4
+example6
 
-example5 <- multiyear_query(c(2021, 2023), c("PWGTP", "JWAP"), c("FER", "HHL"), "DIVISION", 9)
+example7 <- multiyear_query(c(2021, 2023), c("PWGTP", "JWAP"), c("FER", "HHL"), "DIVISION", 9)
 
 #view results
-example5
+example7
 
 #all North Carolina data:
-example6 <- multiyear_query(2021:2024,
+example8 <- multiyear_query(2021:2024,
     c("PWGTP", "AGEP", "GASP", "GRPIP", "JWAP", "JWDP", "JWMNP"),
     c("FER", "HHL", "SCH", "SCHL", "SEX"),
     "STATE", 37)
 
 #view results
-example6
+example8
 ```
 
 ### Part 2: Writing a Generic Function for Summarizing
@@ -663,7 +746,23 @@ example6
 Write a function that produces means and standard deviations for our numeric variable(s) (ignore the time variables) and counts for our categorical variable(s) (year should be treated as categorical).
 
 ```{r}
-summary.census <- function(tibble, nvar, cvar){
+summary.census <- function(tibble,
+                           nvar = NULL,
+                           cvar = NULL){
+  
+  #set defaults if variables are not specified
+  if (is.null(nvar)){
+    #default is all numeric variables except for PWGTP and the time variables
+    nvar <- attributes(tibble)$names
+    nvar <- nvar[nvar %in% c("AGEP","GASP","GRPIP","JWMNP")]
+  }
+   
+  if (is.null(cvar)){ 
+    #default is all character variables
+    cvar <- attributes(tibble)$names
+    cvar <- cvar[cvar %in% c("FER","HHL","SCH","SCHL","SEX")]
+  }
+  
   
   #initialize empty lists for the results
   numeric_results <- list()
@@ -694,7 +793,8 @@ summary.census <- function(tibble, nvar, cvar){
 Examples:
 
 ```{r}
-summary(example6, c("AGEP", "GASP"), c("SEX", "SCH", "year"))
+summary(example8, c("AGEP", "GASP"), c("SEX", "SCH", "year"))
+summary(example8)
 ```
 
 #### Graphical Summaries
@@ -732,8 +832,8 @@ ggplot(tibble) +
 Examples:
 
 ```{r}
-plot(example6, "AGEP", "SEX")
-plot(example6, "GASP", "year")
+plot(example8, "AGEP", "SEX")
+plot(example8, "GASP", "year")
 ```
 
 ### Investigation
